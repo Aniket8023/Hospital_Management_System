@@ -1,9 +1,11 @@
 package com.hospital.hms.service;
 
 import com.hospital.hms.dto.LoginRequestDto;
+import com.hospital.hms.dto.LoginResponseDto;
 
 public interface AuthService {
 
-    String login(LoginRequestDto dto);
+    LoginResponseDto login(
+            LoginRequestDto dto);
 
 }

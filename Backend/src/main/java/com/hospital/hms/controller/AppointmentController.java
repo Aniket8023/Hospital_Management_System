@@ -1,6 +1,7 @@
 package com.hospital.hms.controller;
 
 import com.hospital.hms.dto.AppointmentStatusDto;
+import com.hospital.hms.enums.AppointmentStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,13 +45,12 @@ public class AppointmentController {
     @PutMapping("/{id}/status")
     public Appointment updateStatus(
             @PathVariable Long id,
-            @RequestBody AppointmentStatusDto dto){
+            @RequestParam AppointmentStatus status){
 
         return appointmentService
-                .updateStatus(
+                .updateAppointmentStatus(
                         id,
-                        dto.getStatus());
-
+                        status);
     }
 
 }

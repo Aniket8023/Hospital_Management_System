@@ -21,4 +21,16 @@ public class PatientServiceImpl
         return patientRepository.findAll();
 
     }
+
+    @Override
+    public Patient getPatientById(Long id) {
+
+        return patientRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Patient Not Found"));
+    }
+
+
 }

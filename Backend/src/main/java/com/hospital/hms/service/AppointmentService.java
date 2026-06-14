@@ -2,6 +2,7 @@ package com.hospital.hms.service;
 
 import com.hospital.hms.dto.AppointmentRequestDto;
 import com.hospital.hms.entity.Appointment;
+import com.hospital.hms.enums.AppointmentStatus;
 
 import java.util.List;
 
@@ -14,8 +15,14 @@ public interface AppointmentService {
 
     Appointment getAppointmentById(Long id);
 
-    Appointment updateStatus(
-            Long id,
-            String status);
+    Appointment updateAppointmentStatus(
+            Long appointmentId,
+            AppointmentStatus status);
+
+    List<Appointment>
+    getDoctorAppointments(
+            Long doctorId);
+
+
 
 }

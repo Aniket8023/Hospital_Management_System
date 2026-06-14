@@ -13,4 +13,7 @@ public interface PatientRepository
     findByAadharNumber(
             String aadharNumber);
 
+    Optional<Patient>
+    findById(Long id);
+
 }

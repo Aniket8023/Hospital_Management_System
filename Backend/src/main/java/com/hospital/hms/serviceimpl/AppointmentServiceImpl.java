@@ -121,22 +121,30 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment updateStatus(
-            Long id,
-            String status) {
+    public Appointment updateAppointmentStatus(
+            Long appointmentId,
+            AppointmentStatus status) {
 
         Appointment appointment =
                 appointmentRepository
-                        .findById(id)
+                        .findById(appointmentId)
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Appointment Not Found"));
 
-        appointment.setStatus(
-                AppointmentStatus
-                        .valueOf(status));
+        appointment.setStatus(status);
+
+        return appointmentRepository.save(
+                appointment);
+    }
+
+    @Override
+    public List<Appointment>
+    getDoctorAppointments(
+            Long doctorId) {
 
         return appointmentRepository
-                .save(appointment);
+                .findByDoctorId(
+                        doctorId);
     }
 }

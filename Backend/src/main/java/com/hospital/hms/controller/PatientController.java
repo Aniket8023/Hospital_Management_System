@@ -20,4 +20,12 @@ public class PatientController {
         return patientService.getAllPatients();
 
     }
+
+    @GetMapping("/{id}")
+    public Patient getPatientById(
+            @PathVariable Long id){
+
+        return patientService
+                .getPatientById(id);
+    }
 }
