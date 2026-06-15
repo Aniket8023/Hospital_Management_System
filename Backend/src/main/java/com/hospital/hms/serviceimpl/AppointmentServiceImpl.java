@@ -73,7 +73,25 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         // 2. Get Doctor
+        Doctor doctor =
+                doctorRepository
+                        .findFirstBy()
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Doctor Not Found"));
 
+        boolean alreadyBooked =
+                appointmentRepository
+                        .existsByDoctorIdAndAppointmentDateAndAppointmentTime(
+                                doctor.getId(),
+                                dto.getAppointmentDate(),
+                                dto.getAppointmentTime());
+
+        if(alreadyBooked){
+
+            throw new RuntimeException(
+                    "This slot is already booked");
+        }
 
         // 3. Create Appointment
 
@@ -82,7 +100,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setPatient(patient);
 
-
+        appointment.setDoctor(doctor);
 
         appointment.setAppointmentDate(
                 dto.getAppointmentDate());
@@ -147,4 +165,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .findByDoctorId(
                         doctorId);
     }
+
+
 }

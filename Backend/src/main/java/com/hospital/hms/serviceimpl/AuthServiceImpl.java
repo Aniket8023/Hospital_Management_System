@@ -40,7 +40,8 @@ public class AuthServiceImpl
 
         String token =
                 jwtUtil.generateToken(
-                        user.getEmail());
+                        user.getEmail(),
+                        user.getRole().name());
 
         return new LoginResponseDto(
                 token,

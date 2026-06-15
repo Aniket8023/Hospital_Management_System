@@ -14,7 +14,9 @@ public class JwtUtil {
     private final String SECRET =
             "hospital_management_secret_key_hospital_management_secret_key";
 
-    public String generateToken(String email) {
+    public String generateToken(
+            String email,
+            String role){
 
         SecretKey key =
                 Keys.hmacShaKeyFor(
@@ -22,6 +24,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(
                         new Date(
@@ -31,5 +34,44 @@ public class JwtUtil {
                         key,
                         SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String extractEmail(
+            String token){
+
+        SecretKey key =
+                Keys.hmacShaKeyFor(
+                        SECRET.getBytes());
+
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public String extractRole(
+            String token){
+
+        SecretKey key =
+                Keys.hmacShaKeyFor(
+                        SECRET.getBytes());
+
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role",
+                        String.class);
+    }
+
+    public boolean validateToken(
+            String token,
+            String email){
+
+        return extractEmail(token)
+                .equals(email);
     }
 }
