@@ -4,6 +4,7 @@ import com.hospital.hms.dto.AppointmentRequestDto;
 import com.hospital.hms.entity.Appointment;
 import com.hospital.hms.enums.AppointmentStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AppointmentService {
@@ -24,5 +25,15 @@ public interface AppointmentService {
             Long doctorId);
 
 
+    List<Appointment>
+    getTodayAppointments();
+
+    List<Appointment>
+    getAppointmentsByDate(
+            LocalDate date);
+
+    List<Appointment>
+    getAppointmentsByStatus(
+            AppointmentStatus status);
 
 }

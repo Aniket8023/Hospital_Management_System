@@ -32,5 +32,38 @@ public class PatientServiceImpl
                                 "Patient Not Found"));
     }
 
+    @Override
+    public List<Patient>
+    searchPatientByName(
+            String name) {
+
+        return patientRepository
+                .findByFullNameContainingIgnoreCase(
+                        name);
+    }
+
+    @Override
+    public Patient searchPatientByMobile(
+            String mobileNumber) {
+
+        return patientRepository
+                .findByMobileNumber(
+                        mobileNumber)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Patient Not Found"));
+    }
+
+    @Override
+    public Patient searchPatientByAadhar(
+            String aadharNumber) {
+
+        return patientRepository
+                .findByAadharNumber(
+                        aadharNumber)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Patient Not Found"));
+    }
 
 }

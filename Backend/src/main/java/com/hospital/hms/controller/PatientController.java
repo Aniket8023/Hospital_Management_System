@@ -28,4 +28,40 @@ public class PatientController {
         return patientService
                 .getPatientById(id);
     }
+
+    @GetMapping("/search/name")
+    public List<Patient>
+    searchByName(
+
+            @RequestParam
+            String name){
+
+        return patientService
+                .searchPatientByName(
+                        name);
+    }
+
+    @GetMapping("/search/mobile")
+    public Patient
+    searchByMobile(
+
+            @RequestParam
+            String mobile){
+
+        return patientService
+                .searchPatientByMobile(
+                        mobile);
+    }
+
+    @GetMapping("/search/aadhar")
+    public Patient
+    searchByAadhar(
+
+            @RequestParam
+            String aadhar){
+
+        return patientService
+                .searchPatientByAadhar(
+                        aadhar);
+    }
 }

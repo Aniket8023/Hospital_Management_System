@@ -9,6 +9,7 @@ import com.hospital.hms.dto.AppointmentRequestDto;
 import com.hospital.hms.entity.Appointment;
 import com.hospital.hms.service.AppointmentService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,4 +54,35 @@ public class AppointmentController {
                         status);
     }
 
+    @GetMapping("/today")
+    public List<Appointment>
+    getTodayAppointments(){
+
+        return appointmentService
+                .getTodayAppointments();
+    }
+
+    @GetMapping("/date")
+    public List<Appointment>
+    getAppointmentsByDate(
+
+            @RequestParam
+            LocalDate date){
+
+        return appointmentService
+                .getAppointmentsByDate(
+                        date);
+    }
+
+    @GetMapping("/status")
+    public List<Appointment>
+    getAppointmentsByStatus(
+
+            @RequestParam
+            AppointmentStatus status){
+
+        return appointmentService
+                .getAppointmentsByStatus(
+                        status);
+    }
 }

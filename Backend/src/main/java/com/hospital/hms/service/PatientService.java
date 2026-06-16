@@ -10,4 +10,13 @@ public interface PatientService {
     Patient getPatientById(
             Long id);
 
+    List<Patient>
+    searchPatientByName(
+            String name);
+
+    Patient searchPatientByMobile(
+            String mobileNumber);
+
+    Patient searchPatientByAadhar(
+            String aadharNumber);
 }

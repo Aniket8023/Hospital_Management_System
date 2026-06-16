@@ -1,5 +1,6 @@
 package com.hospital.hms.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,5 +16,13 @@ public interface PatientRepository
 
     Optional<Patient>
     findById(Long id);
+
+    List<Patient>
+    findByFullNameContainingIgnoreCase(
+            String fullName);
+
+    Optional<Patient>
+    findByMobileNumber(
+            String mobileNumber);
 
 }

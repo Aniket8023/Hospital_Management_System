@@ -15,6 +15,14 @@ public interface AppointmentRepository
     List<Appointment>
     findByDoctorId(Long doctorId);
 
+    List<Appointment>
+    findByAppointmentDate(
+            LocalDate appointmentDate);
+
+    List<Appointment>
+    findByStatus(
+            AppointmentStatus status);
+
     Long countByStatus(
             AppointmentStatus status);
 

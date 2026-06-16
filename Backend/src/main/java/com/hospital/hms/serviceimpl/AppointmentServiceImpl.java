@@ -1,5 +1,6 @@
 package com.hospital.hms.serviceimpl;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -166,5 +167,32 @@ public class AppointmentServiceImpl implements AppointmentService {
                         doctorId);
     }
 
+    @Override
+    public List<Appointment>
+    getTodayAppointments() {
 
+        return appointmentRepository
+                .findByAppointmentDate(
+                        LocalDate.now());
+    }
+
+    @Override
+    public List<Appointment>
+    getAppointmentsByDate(
+            LocalDate date) {
+
+        return appointmentRepository
+                .findByAppointmentDate(
+                        date);
+    }
+
+    @Override
+    public List<Appointment>
+    getAppointmentsByStatus(
+            AppointmentStatus status) {
+
+        return appointmentRepository
+                .findByStatus(
+                        status);
+    }
 }
