@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
@@ -42,9 +43,18 @@ public class SecurityConfig {
                                         "/auth/**")
                                 .permitAll()
 
+                                // Public Appointment Booking
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/appointments")
+                                .permitAll()
+
+                                // Appointment Management
                                 .requestMatchers(
                                         "/appointments/**")
-                                .permitAll()
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "DOCTOR")
 
                                 // ADMIN
 
@@ -64,6 +74,16 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                         "/patients/**")
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "DOCTOR")
+
+                                .requestMatchers("/doctor/**")
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "DOCTOR")
+
+                                .requestMatchers("/doctor-schedule/**")
                                 .hasAnyRole(
                                         "ADMIN",
                                         "DOCTOR")

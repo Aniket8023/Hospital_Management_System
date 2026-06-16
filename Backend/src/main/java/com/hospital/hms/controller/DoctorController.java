@@ -6,6 +6,7 @@ import com.hospital.hms.entity.Doctor;
 import com.hospital.hms.service.AppointmentService;
 import com.hospital.hms.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DoctorController {
     private AppointmentService
             appointmentService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Doctor addDoctor(
             @RequestBody
