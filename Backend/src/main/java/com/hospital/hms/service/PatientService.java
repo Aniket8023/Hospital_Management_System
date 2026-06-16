@@ -19,4 +19,11 @@ public interface PatientService {
 
     Patient searchPatientByAadhar(
             String aadharNumber);
+
+    Patient createPatient(
+            Patient patient);
+
+    Patient updatePatient(
+            Long id,
+            Patient patient);
 }

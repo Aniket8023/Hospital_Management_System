@@ -19,4 +19,8 @@ public interface MedicalReportService {
 
     MedicalReport getReportById(
             Long reportId);
+
+    byte[] downloadReport(
+            Long reportId)
+            throws Exception;
 }

@@ -1,12 +1,12 @@
 package com.hospital.hms.controller;
 
+import com.hospital.hms.dto.doctor.DoctorRequestDto;
 import com.hospital.hms.entity.Appointment;
+import com.hospital.hms.entity.Doctor;
 import com.hospital.hms.service.AppointmentService;
+import com.hospital.hms.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,8 +15,37 @@ import java.util.List;
 public class DoctorController {
 
     @Autowired
+    private DoctorService
+            doctorService;
+
+    @Autowired
     private AppointmentService
             appointmentService;
+
+    @PostMapping
+    public Doctor addDoctor(
+            @RequestBody
+            DoctorRequestDto dto){
+
+        return doctorService
+                .addDoctor(dto);
+    }
+
+    @GetMapping
+    public List<Doctor>
+    getAllDoctors(){
+
+        return doctorService
+                .getAllDoctors();
+    }
+
+    @GetMapping("/{id}")
+    public Doctor getDoctorById(
+            @PathVariable Long id){
+
+        return doctorService
+                .getDoctorById(id);
+    }
 
     @GetMapping("/{doctorId}/appointments")
     public List<Appointment>

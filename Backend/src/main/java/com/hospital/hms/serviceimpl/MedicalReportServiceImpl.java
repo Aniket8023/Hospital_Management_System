@@ -17,6 +17,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -74,7 +75,8 @@ public class MedicalReportServiceImpl
 
         Files.copy(
                 file.getInputStream(),
-                filePath);
+                filePath,
+                StandardCopyOption.REPLACE_EXISTING);
 
 
 
@@ -96,6 +98,8 @@ public class MedicalReportServiceImpl
 
         report.setUploadDate(
                 LocalDate.now());
+
+
 
         return medicalReportRepository
                 .save(report);
@@ -120,5 +124,25 @@ public class MedicalReportServiceImpl
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Report Not Found"));
+    }
+
+    @Override
+    public byte[] downloadReport(
+            Long reportId)
+            throws Exception {
+
+        MedicalReport report =
+                medicalReportRepository
+                        .findById(reportId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Report Not Found"));
+
+        Path path =
+                Paths.get(
+                        report.getFilePath());
+
+        return Files.readAllBytes(
+                path);
     }
 }

@@ -5,6 +5,9 @@ import com.hospital.hms.entity.MedicalReport;
 import com.hospital.hms.service.MedicalReportService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,5 +70,31 @@ public class MedicalReportController {
         return medicalReportService
                 .getReportById(
                         reportId);
+    }
+
+    @GetMapping("/{reportId}/download")
+    public ResponseEntity<byte[]>
+    downloadReport(
+            @PathVariable Long reportId)
+            throws Exception {
+
+        MedicalReport report =
+                medicalReportService
+                        .getReportById(
+                                reportId);
+
+        byte[] file =
+                medicalReportService
+                        .downloadReport(
+                                reportId);
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename="
+                                + report.getReportName())
+                .contentType(
+                        MediaType.APPLICATION_OCTET_STREAM)
+                .body(file);
     }
 }
