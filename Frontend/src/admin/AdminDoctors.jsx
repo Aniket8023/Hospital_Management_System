@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoctor, departments, setAdminTab }) {
+  const API = 'http://localhost:8080';
+
+
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // Schedule management states
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleData, setScheduleData] = useState({ doctorId: null, scheduleDate: '', startTime: '', endTime: '' });
+  const [scheduleList, setScheduleList] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [editingDocId, setEditingDocId] = useState(null);
 
   // Form State
@@ -94,6 +102,51 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
     }
   };
 
+  // Schedule Management Functions
+  const openScheduleModal = (doc) => {
+    setScheduleData({ doctorId: doc.id, scheduleDate: '', startTime: '', endTime: '' });
+    setIsScheduleModalOpen(true);
+  };
+  const handleScheduleChange = (e) => {
+    const { name, value } = e.target;
+    setScheduleData(prev => ({ ...prev, [name]: value }));
+  };
+  const createSchedule = async () => {
+    const { doctorId, scheduleDate, startTime, endTime } = scheduleData;
+    const payload = { doctorId, scheduleDate, startTime, endTime };
+    try {
+      const res = await fetch(`${API}/doctor-schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        fetchSchedule(doctorId, scheduleDate);
+        setIsScheduleModalOpen(false);
+      }
+    } catch (e) {
+      console.error('Create schedule failed', e);
+    }
+  };
+  const fetchSchedule = async (doctorId, date) => {
+    try {
+      const res = await fetch(`${API}/doctor-schedule?doctorId=${doctorId}&date=${date}`, { headers: { ...getAuthHeaders() } });
+      const data = await res.json();
+      setScheduleList(data);
+    } catch (e) {
+      console.error('Fetch schedule failed', e);
+    }
+  };
+  const generateSlots = async () => {
+    const { doctorId, scheduleDate } = scheduleData;
+    try {
+      const res = await fetch(`${API}/doctor-schedule/slots?doctorId=${doctorId}&date=${scheduleDate}`, { headers: { ...getAuthHeaders() } });
+      const data = await res.json();
+      setAvailableSlots(data);
+    } catch (e) {
+      console.error('Generate slots failed', e);
+    }
+  };
   return (
     <div className="p-6 md:p-8 space-y-6 font-sans text-gray-800 text-left bg-gray-50/30 min-h-screen">
       
@@ -149,25 +202,25 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
             <div className="flex gap-4 items-start">
               <img
                 src={doc.image}
-                alt={doc.name}
+                alt={doc.user?.name}
                 className="w-16 h-16 rounded-xl object-cover border border-gray-100 flex-shrink-0"
               />
               <div className="space-y-1 text-left">
                 <span className="bg-blue-50 text-[#0B2C56] text-[8px] font-extrabold px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-wide inline-block">
-                  {doc.department}
+                  {doc.qualification}
                 </span>
-                <h3 className="font-extrabold text-gray-800 text-sm leading-snug">{doc.name}</h3>
-                <p className="text-gray-500 text-[10.5px] font-medium leading-none">{doc.role}</p>
+                <h3 className="font-extrabold text-gray-800 text-sm leading-snug">{doc.user?.name}</h3>
+                <p className="text-gray-500 text-[10.5px] font-medium leading-none">{doc.specialization}</p>
               </div>
             </div>
 
             <div className="border-t border-b border-gray-100 py-3 text-xs space-y-1.5 text-gray-600 font-semibold leading-relaxed">
-              <p>✉️ Email: <span className="font-normal text-gray-500">{doc.email}</span></p>
-              <p>📞 Phone: <span className="font-normal text-gray-500">{doc.phone}</span></p>
+              <p>✉️ Email: <span className="font-normal text-gray-500">{doc.user?.email}</span></p>
+              <p>📞 Phone: <span className="font-normal text-gray-500">{doc.phone || "N/A"}</span></p>
               <div className="pt-1.5">
                 <span className="text-[9px] font-extrabold text-gray-400 uppercase tracking-wider block mb-1">Available slots</span>
                 <div className="flex flex-wrap gap-1">
-                  {doc.timeSlots.map((slot, idx) => (
+                  {(doc.timeSlots || []).map((slot, idx) => (
                     <span key={idx} className="bg-gray-50 border border-gray-150 px-2 py-0.5 rounded text-[9px] font-bold text-gray-600">
                       {slot}
                     </span>
@@ -189,6 +242,12 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
                 className="px-3 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold rounded-lg cursor-pointer"
               >
                 🗑️ Delete
+              </button>
+              <button
+                onClick={() => openScheduleModal(doc)}
+                className="px-3 py-1.5 border border-blue-200 text-blue-600 hover:bg-blue-50 text-[11px] font-bold rounded-lg cursor-pointer"
+              >
+                📅 Schedule
               </button>
             </div>
 
@@ -348,6 +407,59 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
         </div>
       )}
 
+{/* Schedule Modal */}
+{isScheduleModalOpen && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl space-y-4 text-left">
+      <div className="flex justify-between items-center border-b pb-3">
+        <h3 className="font-extrabold text-[#0B2C56] text-lg">Doctor Schedule</h3>
+        <button onClick={() => setIsScheduleModalOpen(false)} className="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">
+          ✕
+        </button>
+      </div>
+      <div className="space-y-3">
+        <label className="block text-xs font-bold text-gray-600">Date</label>
+        <input type="date" name="scheduleDate" value={scheduleData.scheduleDate} onChange={handleScheduleChange} className="w-full p-2 border rounded focus:outline-none" />
+        <label className="block text-xs font-bold text-gray-600">Start Time</label>
+        <input type="time" name="startTime" value={scheduleData.startTime} onChange={handleScheduleChange} className="w-full p-2 border rounded focus:outline-none" />
+        <label className="block text-xs font-bold text-gray-600">End Time</label>
+        <input type="time" name="endTime" value={scheduleData.endTime} onChange={handleScheduleChange} className="w-full p-2 border rounded focus:outline-none" />
+        <button onClick={createSchedule} className="w-full py-2 bg-[#0B2C56] hover:bg-[#154175] text-white font-bold rounded">
+          Create Schedule
+        </button>
+      </div>
+      {/* Existing schedules */}
+      {scheduleList.length > 0 && (
+        <div className="mt-4">
+          <h4 className="font-semibold text-gray-700">Existing Schedules</h4>
+          <ul className="list-disc list-inside">
+            {scheduleList.map((s, idx) => (
+              <li key={idx}>{s.scheduleDate} {s.startTime} - {s.endTime}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {/* Available slots */}
+      {availableSlots.length > 0 && (
+        <div className="mt-4">
+          <h4 className="font-semibold text-gray-700">Available Slots</h4>
+          <ul className="list-disc list-inside">
+            {availableSlots.map((slot, idx) => (
+              <li key={idx}>{slot}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div className="flex gap-2 justify-end mt-2">
+        <button onClick={generateSlots} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+          Generate Slots
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
+
+

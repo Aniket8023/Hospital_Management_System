@@ -18,11 +18,22 @@ public class PrescriptionController {
     @Autowired
     private PrescriptionService
             prescriptionService;
+    @GetMapping
+    public List<Prescription> getAllPrescriptions() {
+
+        return prescriptionService
+                .getAllPrescriptions();
+    }
 
     @PostMapping
     public Prescription createPrescription(
             @RequestBody
             PrescriptionRequestDto dto){
+
+        System.out.println("========== PRESCRIPTION API HIT ==========");
+        System.out.println("Patient Id : " + dto.getPatientId());
+        System.out.println("Doctor Id : " + dto.getDoctorId());
+        System.out.println("Appointment Id : " + dto.getAppointmentId());
 
         return prescriptionService
                 .createPrescription(dto);

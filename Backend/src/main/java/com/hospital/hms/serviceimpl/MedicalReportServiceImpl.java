@@ -145,4 +145,28 @@ public class MedicalReportServiceImpl
         return Files.readAllBytes(
                 path);
     }
+    @Override
+    public void deleteReport(
+            Long reportId)
+            throws Exception {
+
+        MedicalReport report =
+                medicalReportRepository
+                        .findById(reportId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Report Not Found"));
+
+        Path path =
+                Paths.get(
+                        report.getFilePath());
+
+        if(Files.exists(path)) {
+
+            Files.delete(path);
+        }
+
+        medicalReportRepository
+                .delete(report);
+    }
 }

@@ -16,46 +16,54 @@ import java.util.List;
 public class DoctorController {
 
     @Autowired
-    private DoctorService
-            doctorService;
+    private DoctorService doctorService;
 
     @Autowired
-    private AppointmentService
-            appointmentService;
+    private AppointmentService appointmentService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Doctor addDoctor(
-            @RequestBody
-            DoctorRequestDto dto){
+            @RequestBody DoctorRequestDto dto) {
 
-        return doctorService
-                .addDoctor(dto);
+        return doctorService.addDoctor(dto);
     }
 
     @GetMapping
-    public List<Doctor>
-    getAllDoctors(){
+    public List<Doctor> getAllDoctors() {
 
-        return doctorService
-                .getAllDoctors();
+        return doctorService.getAllDoctors();
     }
 
     @GetMapping("/{id}")
     public Doctor getDoctorById(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        return doctorService
-                .getDoctorById(id);
+        return doctorService.getDoctorById(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public Doctor updateDoctor(
+            @PathVariable Long id,
+            @RequestBody DoctorRequestDto dto) {
+
+        return doctorService.updateDoctor(id, dto);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteDoctor(
+            @PathVariable Long id) {
+
+        doctorService.deleteDoctor(id);
     }
 
     @GetMapping("/{doctorId}/appointments")
-    public List<Appointment>
-    getDoctorAppointments(
-            @PathVariable Long doctorId){
+    public List<Appointment> getDoctorAppointments(
+            @PathVariable Long doctorId) {
 
         return appointmentService
-                .getDoctorAppointments(
-                        doctorId);
+                .getDoctorAppointments(doctorId);
     }
 }

@@ -1,6 +1,7 @@
 package com.hospital.hms.service;
 
 import com.hospital.hms.entity.Patient;
+
 import java.util.List;
 
 public interface PatientService {
@@ -10,8 +11,7 @@ public interface PatientService {
     Patient getPatientById(
             Long id);
 
-    List<Patient>
-    searchPatientByName(
+    List<Patient> searchPatientByName(
             String name);
 
     Patient searchPatientByMobile(
@@ -26,4 +26,7 @@ public interface PatientService {
     Patient updatePatient(
             Long id,
             Patient patient);
+
+    void deletePatient(
+            Long id);
 }

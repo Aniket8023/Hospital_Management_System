@@ -81,4 +81,10 @@ public class BillingController {
                         MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
+    @GetMapping
+    public List<Bill> getAllBills() {
+
+        return billingService
+                .getAllBills();
+    }
 }

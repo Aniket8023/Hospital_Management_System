@@ -2,6 +2,7 @@ package com.hospital.hms.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Getter
@@ -20,6 +21,11 @@ public class Doctor {
 
     private Integer experience;
 
+
+
     @OneToOne
+    @JsonIgnoreProperties({
+            "password"
+    })
     private User user;
 }

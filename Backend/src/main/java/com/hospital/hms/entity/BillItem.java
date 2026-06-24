@@ -1,7 +1,9 @@
 package com.hospital.hms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
@@ -15,9 +17,9 @@ public class BillItem {
             strategy =
                     GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "bill_id")
+    @JsonBackReference
     private Bill bill;
 
     private String itemName;

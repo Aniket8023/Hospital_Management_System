@@ -1,260 +1,409 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 
-export default function AdminAppointments({ appointments, updateAppointmentStatus, updateAppointmentDateTime, setAdminTab }) {
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [reschedulingId, setReschedulingId] = useState(null);
-  
-  // Reschedule Form State
-  const [rescheduleData, setRescheduleData] = useState({
-    date: '',
-    time: ''
+export default function AdminAppointments() {
+  const [appointments, setAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [currentAppt, setCurrentAppt] = useState({
+    id: '',
+    patientName: '',
+    preferredDate: '',
+    preferredTime: '',
+    status: 'Pending',
+    mobileNumber: '',
+    aadharNumber: '',
+    age: '',
+    gender: '',
+    address: '',
+    problemDescription: ''
   });
 
-  const filteredAppts = filterStatus === 'All'
-    ? appointments
-    : appointments.filter(a => a.status === filterStatus);
+  const API = 'http://localhost:8080';
 
-  const startReschedule = (appt) => {
-    setReschedulingId(appt.id);
-    setRescheduleData({
-      date: appt.preferredDate,
-      time: appt.preferredTime
-    });
+
+
+
+  // Load appointments from backend
+  const fetchAppointments = async () => {
+    try {
+      const res = await fetch(`${API}/appointments`, { headers: { ...getAuthHeaders() } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setAppointments(data);
+    } catch (e) {
+      console.error('Failed to fetch appointments', e);
+    }
   };
 
-  const saveReschedule = (id) => {
-    if (!rescheduleData.date || !rescheduleData.time) return;
-    updateAppointmentDateTime(id, rescheduleData.date, rescheduleData.time);
-    setReschedulingId(null);
+  // Load patients for the selector dropdown
+  const fetchPatients = async () => {
+    try {
+      const res = await fetch(`${API}/patients`, { headers: { ...getAuthHeaders() } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setPatients(data);
+    } catch (e) {
+      console.error('Failed to fetch patients', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    fetchPatients();
+  }, []);
+
+  const openAddModal = () => {
+    setEditMode(false);
+    setCurrentAppt({
+      id: '',
+      patientName: '',
+      preferredDate: new Date().toISOString().split('T')[0],
+      preferredTime: '10:00',
+      status: 'Pending',
+      mobileNumber: '',
+      aadharNumber: '',
+      age: '',
+      gender: '',
+      address: '',
+      problemDescription: ''
+    });
+    setModalOpen(true);
+  };
+
+  const openEditModal = (appt) => {
+    setEditMode(true);
+    setCurrentAppt({
+      ...appt,
+      patientName: appt.patient?.fullName || '',
+      preferredDate: appt.appointmentDate || '',
+      preferredTime: appt.appointmentTime || '',
+      status: appt.status || 'Pending',
+      mobileNumber: appt.mobileNumber || '',
+      aadharNumber: appt.aadharNumber || '',
+      age: appt.age || '',
+      gender: appt.gender || '',
+      address: appt.address || '',
+      problemDescription: appt.problemDescription || ''
+    });
+    setModalOpen(true);
+  };
+
+  const addAppointment = async (appt) => {
+    const payload = {
+      fullName: appt.patientName,
+      mobileNumber: appt.mobileNumber,
+      aadharNumber: appt.aadharNumber,
+      age: Number(appt.age) || 0,
+      gender: appt.gender || 'Male',
+      address: appt.address,
+      appointmentDate: appt.preferredDate,
+      appointmentTime: appt.preferredTime,
+      problemDescription: appt.problemDescription || ''
+    };
+    try {
+      const res = await fetch(`${API}/appointments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify(payload)
+        });
+      if (res.ok) fetchAppointments();
+    } catch (e) {
+      console.error('Add appointment failed', e);
+    }
+  };
+
+  const editAppointment = async (id, appt) => {
+    const payload = {
+      fullName: appt.patientName,
+      mobileNumber: appt.mobileNumber,
+      aadharNumber: appt.aadharNumber,
+      age: Number(appt.age) || 0,
+      gender: appt.gender || 'Male',
+      address: appt.address,
+      appointmentDate: appt.preferredDate,
+      appointmentTime: appt.preferredTime,
+      problemDescription: appt.problemDescription || ''
+    };
+    try {
+      const res = await fetch(`${API}/appointments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify(payload)
+        });
+      if (res.ok) fetchAppointments();
+    } catch (e) {
+      console.error('Edit appointment failed', e);
+    }
+  };
+
+  const updateAppointmentStatus = async (id, status) => {
+    try {
+      const res = await fetch(`${API}/appointments/${id}/status?status=${status}`, {
+          method: 'PUT',
+          headers: { ...getAuthHeaders() }
+        });
+      if (res.ok) fetchAppointments();
+    } catch (e) {
+      console.error('Status update failed', e);
+    }
+  };
+
+  const deleteAppointment = async (id) => {
+    try {
+      const res = await fetch(`${API}/appointments/${id}`, { method: 'DELETE', headers: { ...getAuthHeaders() } });
+      if (res.ok) fetchAppointments();
+    } catch (e) {
+      console.error('Delete failed', e);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!currentAppt.patientName || !currentAppt.preferredDate || !currentAppt.preferredTime) return;
+    if (editMode) {
+      editAppointment(currentAppt.id, currentAppt);
+    } else {
+      addAppointment(currentAppt);
+    }
+    setModalOpen(false);
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'Confirmed':
       case 'Approved':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'Completed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Pending':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Cancelled':
-        return 'bg-rose-100 text-rose-800 border-rose-200';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   return (
     <div className="p-6 md:p-8 space-y-6 font-sans text-gray-800 text-left bg-gray-50/30 min-h-screen">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-5">
+      <div className="flex justify-between items-center border-b border-gray-100 pb-5">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#0B2C56]">Manage Appointments</h1>
-          <p className="text-gray-500 text-xs mt-1 font-semibold">Verify registration logs and confirm booking slots</p>
+          <h1 className="text-2xl font-extrabold text-[#0B2C56] tracking-tight">Appointments</h1>
+          <p className="text-gray-400 text-xs mt-1">Manage and track hospital doctor booking appointments</p>
         </div>
-
-        {/* Tab Controls */}
-        <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">
-          <button
-            onClick={() => setAdminTab('dashboard')}
-            className="px-4 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-white/60 transition cursor-pointer"
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => setAdminTab('appointments')}
-            className="px-4 py-2 rounded-lg text-xs font-bold bg-white text-[#0B2C56] shadow-xs cursor-pointer"
-          >
-            Manage Appointments
-          </button>
-          <button
-            onClick={() => setAdminTab('doctors')}
-            className="px-4 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-white/60 transition cursor-pointer"
-          >
-            Manage Doctors
-          </button>
-        </div>
+        <button
+          onClick={openAddModal}
+          className="px-4 py-2 bg-[#0B2C56] hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-md cursor-pointer flex items-center gap-1.5"
+        >
+          <span>+ New Appointment</span>
+        </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-1.5">
-        {['All', 'Pending', 'Approved', 'Completed', 'Cancelled'].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilterStatus(status)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition duration-150 border cursor-pointer ${
-              filterStatus === status
-                ? 'bg-[#0B2C56] text-white border-[#0B2C56]'
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            {status} ({status === 'All' ? appointments.length : appointments.filter(a => a.status === status).length})
-          </button>
-        ))}
-      </div>
-
-      {/* Appointments Grid/List */}
-      <div className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-xs">
+      <div className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs md:text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-150 text-[10px] uppercase text-gray-400 font-extrabold tracking-wider">
-                <th className="p-4">Appt ID & Date</th>
-                <th className="p-4">Patient Details</th>
-                <th className="p-4">Doctor & Dept</th>
-                <th className="p-4">Slot Details</th>
+                <th className="p-4">ID</th>
+                <th className="p-4">Patient</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Time</th>
                 <th className="p-4 text-center">Status</th>
-                <th className="p-4 text-right">Actions</th>
+                <th className="p-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-150">
-              {filteredAppts.map((appt) => (
+              {appointments.map((appt) => (
                 <tr key={appt.id} className="hover:bg-gray-50/50 transition">
-                  
-                  {/* ID & date booked */}
-                  <td className="p-4 space-y-1">
-                    <span className="font-extrabold text-[#0B2C56] block text-xs md:text-sm">{appt.id}</span>
-                    <span className="text-[10px] text-gray-400 block font-semibold">Registered</span>
-                  </td>
-
-                  {/* Patient Info */}
-                  <td className="p-4 space-y-1.5">
-                    <div className="font-bold text-gray-800">{appt.patientName}</div>
-                    <div className="text-[10.5px] text-gray-500 font-semibold space-y-0.5 leading-snug">
-                      <p>📞 Phone: {appt.mobileNumber}</p>
-                      <p>💳 Aadhar: {appt.aadharNumber}</p>
-                      {appt.emailAddress && <p>✉️ Email: {appt.emailAddress}</p>}
-                    </div>
-                  </td>
-
-                  {/* Doctor & Department */}
-                  <td className="p-4 space-y-1">
-                    <span className="font-bold text-gray-800 block">{appt.selectDoctor}</span>
-                    <span className="bg-blue-50 text-[#0B2C56] text-[9px] font-bold px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-wide inline-block">
-                      {appt.department}
-                    </span>
-                  </td>
-
-                  {/* Preferred Slot & Inline Reschedule form */}
-                  <td className="p-4 space-y-1.5">
-                    {reschedulingId === appt.id ? (
-                      <div className="space-y-1.5 bg-gray-50 p-2 rounded-lg border border-gray-200">
-                        <input
-                          type="date"
-                          value={rescheduleData.date}
-                          onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
-                          className="w-full p-1 border border-gray-200 rounded text-[11px] focus:outline-none bg-white font-medium"
-                        />
-                        <select
-                          value={rescheduleData.time}
-                          onChange={(e) => setRescheduleData(prev => ({ ...prev, time: e.target.value }))}
-                          className="w-full p-1 border border-gray-200 rounded text-[11px] focus:outline-none bg-white font-medium cursor-pointer"
-                        >
-                          <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
-                          <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
-                          <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
-                          <option value="06:00 PM - 08:00 PM">06:00 PM - 08:00 PM</option>
-                        </select>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => saveReschedule(appt.id)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold px-2 py-1 rounded cursor-pointer"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setReschedulingId(null)}
-                            className="bg-gray-400 hover:bg-gray-500 text-white text-[9px] font-bold px-2 py-1 rounded cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="font-bold text-gray-800 block">📅 {appt.preferredDate}</span>
-                        <span className="text-gray-500 font-semibold block text-[11px]">⏰ {appt.preferredTime}</span>
-                        {appt.reasonForVisit && (
-                          <span className="text-[10px] text-gray-400 leading-tight block max-w-[180px] truncate" title={appt.reasonForVisit}>
-                            ✏️ "{appt.reasonForVisit}"
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </td>
-
-                  {/* Status Badge */}
+                  <td className="p-4 font-bold text-gray-700">{appt.id}</td>
+                  <td className="p-4 font-extrabold text-[#0B2C56]">{appt.patient?.fullName}</td>
+                  <td className="p-4 text-gray-600 font-bold">{appt.appointmentDate}</td>
+                  <td className="p-4 text-gray-500 font-semibold">{appt.appointmentTime}</td>
                   <td className="p-4 text-center">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border inline-block ${getStatusBadge(appt.status)}`}>
-                      {appt.status}
-                    </span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase border inline-block ${getStatusBadge(appt.status)}`}> {appt.status} </span>
                   </td>
-
-                  {/* Operation Actions */}
-                  <td className="p-4 text-right space-y-1">
-                    <div className="flex flex-col sm:flex-row justify-end gap-1.5">
-                      
-                      {/* Show Approval control only if pending */}
+                  <td className="p-4">
+                    <div className="flex justify-center items-center gap-3">
                       {appt.status === 'Pending' && (
-                        <>
-                          <button
-                            onClick={() => updateAppointmentStatus(appt.id, 'Approved')}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition shadow-xs cursor-pointer"
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            onClick={() => updateAppointmentStatus(appt.id, 'Cancelled')}
-                            className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition shadow-xs cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      )}
-
-                      {/* General Reschedule button if not completed/cancelled */}
-                      {(appt.status === 'Pending' || appt.status === 'Approved') && (
                         <button
-                          onClick={() => startReschedule(appt)}
-                          className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold rounded-lg transition shadow-xs cursor-pointer"
+                          onClick={() => updateAppointmentStatus(appt.id, 'Confirmed')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold rounded transition shadow-xs cursor-pointer"
                         >
-                          Reschedule
+                          Confirm
                         </button>
                       )}
-
-                      {/* Show Cancel for Approved appointments too if patients cancel */}
-                      {appt.status === 'Approved' && (
-                        <button
-                          onClick={() => updateAppointmentStatus(appt.id, 'Cancelled')}
-                          className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition shadow-xs cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                      
-                      {/* Details of clinical records if completed */}
-                      {appt.status === 'Completed' && (
-                        <div className="text-[10px] font-semibold text-gray-500 text-right pr-2">
-                          {appt.prescription ? 'Prescription Sent ✓' : 'Report Logged ✓'}
-                        </div>
-                      )}
+                      <button
+                        onClick={() => openEditModal(appt)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-blue-50 transition"
+                        title="Edit Appointment"
+                      >
+                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => deleteAppointment(appt.id)}
+                        className="text-rose-600 hover:text-rose-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-rose-50 transition"
+                        title="Delete Appointment"
+                      >
+                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {filteredAppts.length === 0 && (
+        {appointments.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-xs">
-            <span>📋</span>
-            <p className="mt-1">No appointments found matching this status filter.</p>
+            <span>📅</span>
+            <p className="mt-1">No appointments scheduled.</p>
           </div>
         )}
       </div>
 
+      {/* Modal Dialog */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative text-left max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+            <h3 className="text-lg font-bold text-[#0B2C56] border-b border-gray-100 pb-2">
+              {editMode ? 'Edit Appointment Details' : 'Book New Appointment'}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Patil"
+                    value={currentAppt.patientName}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, patientName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    value={currentAppt.mobileNumber}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, mobileNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Aadhar Number</label>
+                  <input
+                    type="text"
+                    value={currentAppt.aadharNumber}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, aadharNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Age</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={currentAppt.age}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, age: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Gender</label>
+                  <select
+                    value={currentAppt.gender}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, gender: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Preferred Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={currentAppt.preferredDate}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, preferredDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Preferred Time Slot</label>
+                  <input
+                    type="time"
+                    required
+                    value={currentAppt.preferredTime}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, preferredTime: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Status</label>
+                  <select
+                    value={currentAppt.status}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, status: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Address</label>
+                  <input
+                    type="text"
+                    value={currentAppt.address}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, address: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Problem Description</label>
+                  <textarea
+                    rows="2"
+                    value={currentAppt.problemDescription}
+                    onChange={(e) => setCurrentAppt({ ...currentAppt, problemDescription: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-4 py-2 bg-[#0B2C56] hover:bg-blue-800 text-white font-bold text-sm rounded-lg shadow transition cursor-pointer"
+              >
+                {editMode ? 'Save Changes' : 'Book Appointment'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

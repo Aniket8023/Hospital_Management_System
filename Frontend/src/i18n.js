@@ -1,0 +1,62 @@
+export const translations = {
+  en: {
+    'sidebar.dashboard': 'Dashboard',
+    'sidebar.appointments': 'Appointments',
+    'sidebar.patients': 'Patients',
+    'sidebar.doctors': 'Doctors',
+    'sidebar.prescriptions': 'Prescriptions',
+    'sidebar.schedules': 'Schedules',
+    'sidebar.billing': 'Billing',
+    'sidebar.reports': 'Reports',
+    'sidebar.inventory': 'Inventory',
+    'sidebar.purchases': 'Purchases',
+    'sidebar.suppliers': 'Suppliers',
+    'sidebar.services': 'Services',
+    'sidebar.gallery': 'Gallery',
+    'sidebar.users': 'Users',
+    'sidebar.settings': 'Settings',
+    'header.logout': 'Logout',
+    // Add more keys as needed
+  },
+  hi: {
+    'sidebar.dashboard': 'डैशबोर्ड',
+    'sidebar.appointments': 'नियुक्तियां',
+    'sidebar.patients': 'रोगी',
+    'sidebar.doctors': 'डॉक्टर',
+    'sidebar.prescriptions': 'प्रिस्क्रिप्शन',
+    'sidebar.schedules': 'समय-सारिणी',
+    'sidebar.billing': 'बिलिंग',
+    'sidebar.reports': 'रिपोर्ट',
+    'sidebar.inventory': 'इन्वेंटरी',
+    'sidebar.purchases': 'खरीद',
+    'sidebar.suppliers': 'सप्लायर',
+    'sidebar.services': 'सेवाएँ',
+    'sidebar.gallery': 'गैलरी',
+    'sidebar.users': 'उपयोगकर्ता',
+    'sidebar.settings': 'सेटिंग्स',
+    'header.logout': 'लॉगआउट',
+  },
+  mr: {
+    'sidebar.dashboard': 'डॅशबोर्ड',
+    'sidebar.appointments': 'अपॉइंटमेंट्स',
+    'sidebar.patients': 'रुग्ण',
+    'sidebar.doctors': 'डॉक्टर',
+    'sidebar.prescriptions': 'प्रिस्क्रिप्शन',
+    'sidebar.schedules': 'वेळापत्रक',
+    'sidebar.billing': 'बिलिंग',
+    'sidebar.reports': 'अहवाल',
+    'sidebar.inventory': 'स्टॉक',
+    'sidebar.purchases': 'खरेदी',
+    'sidebar.suppliers': 'पुरवठादार',
+    'sidebar.services': 'सेवा',
+    'sidebar.gallery': 'गॅलरी',
+    'sidebar.users': 'वापरकर्ते',
+    'sidebar.settings': 'सेटिंग्ज',
+    'header.logout': 'बाहेर पडणे',
+  },
+};
+
+export const t = (key, lang = 'en') => {
+  const l = translations[lang] || translations.en;
+  return l[key] || key;
+};
