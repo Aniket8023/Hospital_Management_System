@@ -3,7 +3,6 @@ package com.hospital.hms.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,8 +19,8 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -31,77 +30,7 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers("/auth/**")
-                        .permitAll()
-
-                        .requestMatchers(
-                                "/appointments",
-                                "/appointments/**")
-                        .hasAnyRole("ADMIN", "DOCTOR")
-
-                        .requestMatchers(
-                                "/appointments",
-                                "/appointments/**")
-                        .hasAnyRole("ADMIN", "DOCTOR")
-
-                        .requestMatchers(
-                                "/dashboard",
-                                "/dashboard/**")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(
-                                "/inventory",
-                                "/inventory/**")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(
-                                "/bills",
-                                "/bills/**")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(
-                                "/patients",
-                                "/patients/**")
-                        .hasAnyRole(
-                                "ADMIN",
-                                "DOCTOR")
-
-                        .requestMatchers(
-                                "/doctor",
-                                "/doctor/**")
-                        .hasAnyRole(
-                                "ADMIN",
-                                "DOCTOR")
-
-                        .requestMatchers(
-                                "/doctor-schedule",
-                                "/doctor-schedule/**")
-                        .hasAnyRole(
-                                "ADMIN",
-                                "DOCTOR")
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/prescriptions")
-                        .permitAll()
-
-                        .requestMatchers(
-                                "/prescriptions",
-                                "/prescriptions/**")
-                        .hasAnyRole(
-                                "ADMIN",
-                                "DOCTOR")
-
-                        .requestMatchers(
-                                "/reports",
-                                "/reports/**")
-                        .hasAnyRole(
-                                "ADMIN",
-                                "DOCTOR")
-
-                        .anyRequest()
-                        .authenticated()
+                        .anyRequest().permitAll()
                 )
 
                 .addFilterBefore(

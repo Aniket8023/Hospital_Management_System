@@ -68,19 +68,11 @@ export default function AdminLogin({ onLoginSuccess }) {
       <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200 shadow-xl p-8 space-y-6">
         
         {/* Brand Logo & Welcome */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <Logo showText={false} className="h-16 w-16" />
+            <Logo showText={true} imgClassName="h-16" />
           </div>
-          <div className="flex flex-col items-center leading-none mt-1">
-            <span className="font-extrabold tracking-wide text-2xl text-[#0B2C56] font-sans">
-              SHINDE
-            </span>
-            <span className="font-bold tracking-[0.25em] text-[10px] text-gray-500 leading-none mt-0.5 uppercase">
-              — ENT Hospital —
-            </span>
-          </div>
-          <div className="pt-2">
+          <div className="pt-1">
             <h2 className="text-xl font-bold text-gray-800">Welcome Back!</h2>
             <p className="text-gray-400 text-xs mt-1">Please login to your account</p>
           </div>

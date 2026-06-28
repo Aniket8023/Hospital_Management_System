@@ -58,15 +58,9 @@ export default function DoctorLogin({ doctors, onLoginSuccess }) {
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
           {/* Top brand strip */}
-          <div className="bg-[#065f46] px-8 py-6 text-center space-y-3">
-            <div className="flex justify-center">
-              <div className="bg-white p-2 rounded-xl shadow-md inline-block">
-                <Logo showText={false} />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-white font-extrabold text-xl tracking-wide">SHINDE HOSPITAL</h1>
-              <p className="text-emerald-200 text-xs font-semibold tracking-widest uppercase mt-0.5">Clinical Workspace</p>
+          <div className="bg-[#065f46] px-8 py-5 flex justify-center">
+            <div className="bg-white px-4 py-2 rounded-2xl shadow-md inline-flex items-center">
+              <Logo showText={true} imgClassName="h-12" />
             </div>
           </div>
 

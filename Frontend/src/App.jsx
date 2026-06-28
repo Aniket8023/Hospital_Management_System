@@ -152,16 +152,12 @@ function AdminPortal({
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col fixed top-0 left-0 bottom-0 z-50 shadow-sm">
         
         {/* Sidebar Brand Logo */}
-        <div className="px-5 py-5 border-b border-gray-100 flex items-center gap-3">
+        <div className="px-4 py-4 border-b border-gray-100">
           <div
-            className="flex items-center gap-2.5 cursor-pointer"
+            className="cursor-pointer flex items-center"
             onClick={() => navigate('/')}
           >
-            <Logo showText={false} className="w-10 h-10" />
-            <div className="text-left leading-tight">
-              <span className="font-extrabold text-sm text-[#0B2C56] block tracking-wide">SHINDE</span>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest block leading-none">ENT Hospital</span>
-            </div>
+            <Logo showText={true} imgClassName="h-10" />
           </div>
         </div>
 
@@ -275,6 +271,7 @@ function AdminPortal({
                 appointments={appointments}
                 savePrescription={savePrescription}
                 prescriptions={prescriptions}
+                hash={hash}
               />
             )}
             {adminTab === 'schedules' && (
@@ -287,6 +284,7 @@ function AdminPortal({
               patients={patients}
               saveBill={saveBill}
               bills={bills}
+              hash={hash}
             />
           )}
           {adminTab === 'reports' && (
@@ -318,12 +316,8 @@ function DoctorPortal({ doctors, appointments, resolveAppointment, loggedInDocto
       <header className="bg-[#0B2C56] text-white shadow-md border-b border-[#12396b] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="bg-white p-1.5 rounded-lg">
-              <Logo showText={false} />
-            </div>
-            <div className="text-left leading-tight">
-              <span className="font-extrabold text-sm tracking-widest block text-white">SHINDE HOSPITAL</span>
-              <span className="text-[10px] text-blue-200 uppercase font-bold tracking-wider">Clinical Workspace</span>
+            <div className="bg-white px-3 py-1 rounded-xl shadow-sm">
+              <Logo showText={true} imgClassName="h-10" />
             </div>
           </div>
           <div className="flex items-center gap-3">

@@ -7,26 +7,37 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   const [appointmentsData, setAppointmentsData] = useState([]);
   const [doctorsData, setDoctorsData] = useState([]);
   const [patientsData, setPatientsData] = useState([]);
+  const [billsData, setBillsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [apptsRes, docsRes, patsRes] = await Promise.all([
+        const [apptsRes, docsRes, patsRes, billsRes] = await Promise.all([
           fetch(`${API}/appointments`, { headers: { ...getAuthHeaders() } }),
           fetch(`${API}/doctor`, { headers: { ...getAuthHeaders() } }),
-          fetch(`${API}/patients`, { headers: { ...getAuthHeaders() } })
+          fetch(`${API}/patients`, { headers: { ...getAuthHeaders() } }),
+          fetch(`${API}/bills`, { headers: { ...getAuthHeaders() } })
         ]);
         
         if (!apptsRes.ok) throw new Error(`HTTP ${apptsRes.status}`);
         if (!docsRes.ok) throw new Error(`HTTP ${docsRes.status}`);
         if (!patsRes.ok) throw new Error(`HTTP ${patsRes.status}`);
+        // don't fail if bills fails, just log it, but wait bills is needed
+        if (!billsRes.ok) throw new Error(`HTTP ${billsRes.status}`);
 
-        const [appts, docs, pats] = await Promise.all([apptsRes.json(), docsRes.json(), patsRes.json()]);
+        const [appts, docs, pats, bills] = await Promise.all([
+          apptsRes.json(), 
+          docsRes.json(), 
+          patsRes.json(),
+          billsRes.json()
+        ]);
+        
         setAppointmentsData(appts);
         setDoctorsData(docs);
         setPatientsData(pats);
+        setBillsData(Array.isArray(bills) ? bills : []);
         setLoading(false);
       } catch (e) {
         console.error('Failed to load dashboard data', e);
@@ -37,18 +48,28 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
     fetchData();
   }, []);
 
-  const totalApptsCount = appointmentsData.length;
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const totalPatientsCount = patientsData.length;
   const pendingCount = appointmentsData.filter(a => a.status === 'Pending').length;
 
-  // Use the first few items for display
-  const todayAppointments = appointmentsData.slice(0, 5).map(appt => ({
+  const todaysAppts = appointmentsData.filter(a => a.appointmentDate === todayStr);
+  const todayApptsCount = todaysAppts.length;
+
+  const todayRevenue = billsData
+    .filter(b => b.billDate === todayStr)
+    .reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+
+  // Use the first few today's items for display
+  const todayAppointments = todaysAppts.slice(0, 5).map(appt => ({
     time: appt.appointmentTime || '',
     name: appt.fullName || '',
     mobile: appt.mobileNumber || '',
     status: appt.status || 'Pending'
   }));
 
-  const recentPatients = patientsData.slice(0, 5).map(pat => ({
+  const sortedPatients = [...patientsData].sort((a, b) => (b.id || 0) - (a.id || 0));
+  const recentPatients = sortedPatients.slice(0, 5).map(pat => ({
     name: pat.fullName || '',
     date: pat.createdAt ? new Date(pat.createdAt).toLocaleDateString() : '',
     initial: pat.fullName ? pat.fullName.split(' ').map(n => n[0]).join('') : ''
@@ -70,7 +91,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider block">Today's Appointments</span>
-            <span className="text-2xl font-black text-gray-900 block">12</span>
+            <span className="text-2xl font-black text-gray-900 block">{todayApptsCount}</span>
           </div>
           <span className="text-3xl bg-blue-50 p-3 rounded-2xl text-blue-600">📅</span>
         </div>
@@ -79,7 +100,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider block">Total Patients</span>
-            <span className="text-2xl font-black text-gray-900 block">256</span>
+            <span className="text-2xl font-black text-gray-900 block">{totalPatientsCount}</span>
           </div>
           <span className="text-3xl bg-emerald-50 p-3 rounded-2xl text-emerald-600">👥</span>
         </div>
@@ -88,7 +109,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider block">Today's Revenue</span>
-            <span className="text-2xl font-black text-gray-900 block">₹ 8,450</span>
+            <span className="text-2xl font-black text-gray-900 block">₹ {todayRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
           </div>
           <span className="text-3xl bg-purple-50 p-3 rounded-2xl text-purple-600">💸</span>
         </div>
@@ -97,7 +118,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider block">Pending Appointments</span>
-            <span className="text-2xl font-black text-gray-900 block">5</span>
+            <span className="text-2xl font-black text-gray-900 block">{pendingCount}</span>
           </div>
           <span className="text-3xl bg-orange-50 p-3 rounded-2xl text-orange-600">⏳</span>
         </div>

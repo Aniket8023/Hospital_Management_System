@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getAuthHeaders } from '../utils/auth';
+import AdminPatientProfile from './AdminPatientProfile';
 
 export default function AdminPatients({ patients, addPatient, editPatient, deletePatient }) {
   const [modalOpen, setModalOpen] = useState(false);
   // Search state
   const [searchName, setSearchName] = useState('');
-  const [searchMobile, setSearchMobile] = useState('');
   const [searchAadhar, setSearchAadhar] = useState('');
   const [filteredPatients, setFilteredPatients] = useState(patients);
 
@@ -15,6 +15,9 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
   }, [patients]);
   const [editMode, setEditMode] = useState(false);
   const [currentPatient, setCurrentPatient] = useState({ id: '', fullName: '', age: '', gender: 'Male', mobileNumber: '', aadharNumber: '', address: '' });
+  
+  // Profile View State
+  const [viewingPatientId, setViewingPatientId] = useState(null);
 
   const openAddModal = () => {
     setEditMode(false);
@@ -47,6 +50,10 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
     setModalOpen(false);
   };
 
+  if (viewingPatientId) {
+    return <AdminPatientProfile patientId={viewingPatientId} onBack={() => setViewingPatientId(null)} />;
+  }
+
   return (
     <div className="p-6 md:p-8 space-y-6 font-sans text-gray-800 text-left bg-gray-50/30 min-h-screen">
       
@@ -67,18 +74,12 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
       {/* Search Bar */}
       <div className="flex items-center gap-4 mb-4">
         <input type="text" placeholder="Search by name" value={searchName} onChange={e => setSearchName(e.target.value)} className="px-3 py-2 border rounded" />
-        <input type="text" placeholder="Search by mobile" value={searchMobile} onChange={e => setSearchMobile(e.target.value)} className="px-3 py-2 border rounded" />
         <input type="text" placeholder="Search by aadhar" value={searchAadhar} onChange={e => setSearchAadhar(e.target.value)} className="px-3 py-2 border rounded" />
         <button onClick={() => {
           if (searchName) {
             fetch(`http://localhost:8080/patients/search/name?name=${encodeURIComponent(searchName)}`, { headers: { ...getAuthHeaders() } })
               .then(res => res.json())
               .then(data => setFilteredPatients(data))
-              .catch(() => console.error('Search failed'));
-          } else if (searchMobile) {
-            fetch(`http://localhost:8080/patients/search/mobile?mobile=${encodeURIComponent(searchMobile)}`, { headers: { ...getAuthHeaders() } })
-              .then(res => res.json())
-              .then(data => setFilteredPatients([data]))
               .catch(() => console.error('Search failed'));
           } else if (searchAadhar) {
             fetch(`http://localhost:8080/patients/search/aadhar?aadhar=${encodeURIComponent(searchAadhar)}`, { headers: { ...getAuthHeaders() } })
@@ -89,7 +90,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
             setFilteredPatients(patients);
           }
         }} className="px-4 py-1 bg-[#0B2C56] text-white rounded">Search</button>
-        <button onClick={() => { setSearchName(''); setSearchMobile(''); setSearchAadhar(''); setFilteredPatients(patients); }} className="px-4 py-1 bg-gray-300 rounded">Clear</button>
+        <button onClick={() => { setSearchName(''); setSearchAadhar(''); setFilteredPatients(patients); }} className="px-4 py-1 bg-gray-300 rounded">Clear</button>
       </div>
 
       {/* Patients Table Card */}
@@ -120,6 +121,16 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
                   <td className="p-4 text-gray-600 font-medium">{p.address}</td>
                   <td className="p-4">
                     <div className="flex justify-center items-center gap-3">
+                      <button
+                        onClick={() => setViewingPatientId(p.id)}
+                        className="text-emerald-600 hover:text-emerald-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-emerald-50 transition"
+                        title="View Full Profile"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
                       <button
                         onClick={() => openEditModal(p)}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-blue-50 transition"
