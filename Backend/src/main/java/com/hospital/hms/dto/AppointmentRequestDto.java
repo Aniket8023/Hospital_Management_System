@@ -14,6 +14,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class AppointmentRequestDto {
 
+    private Long doctorId;
 
     private String fullName;
 

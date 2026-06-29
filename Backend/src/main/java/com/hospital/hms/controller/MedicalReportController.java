@@ -97,4 +97,12 @@ public class MedicalReportController {
                         MediaType.APPLICATION_OCTET_STREAM)
                 .body(file);
     }
+    @DeleteMapping("/{reportId}")
+    public String deleteReport(
+            @PathVariable Long reportId) throws Exception {
+
+        medicalReportService.deleteReport(reportId);
+
+        return "Report Deleted Successfully";
+    }
 }

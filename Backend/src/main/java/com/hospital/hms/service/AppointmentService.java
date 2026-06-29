@@ -35,5 +35,11 @@ public interface AppointmentService {
     List<Appointment>
     getAppointmentsByStatus(
             AppointmentStatus status);
+    Appointment updateAppointment(
+            Long id,
+            AppointmentRequestDto dto);
+
+    void deleteAppointment(
+            Long id);
 
 }

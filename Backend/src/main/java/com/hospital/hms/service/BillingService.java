@@ -12,6 +12,8 @@ public interface BillingService {
     BillResponseDto generateBill(
             BillRequestDto dto);
 
+    List<Bill> getAllBills();
+
     Bill getBillById(
             Long billId);
 

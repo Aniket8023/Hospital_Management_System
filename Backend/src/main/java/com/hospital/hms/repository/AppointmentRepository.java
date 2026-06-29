@@ -1,9 +1,8 @@
 package com.hospital.hms.repository;
 
+import com.hospital.hms.entity.Appointment;
 import com.hospital.hms.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.hospital.hms.entity.Appointment;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -35,4 +34,8 @@ public interface AppointmentRepository
     findByDoctorIdAndAppointmentDate(
             Long doctorId,
             LocalDate appointmentDate);
+
+    // NEW
+    List<Appointment>
+    findByPatientId(Long patientId);
 }

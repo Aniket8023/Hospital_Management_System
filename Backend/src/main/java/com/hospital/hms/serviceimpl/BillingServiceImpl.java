@@ -162,4 +162,9 @@ public class BillingServiceImpl
                 .generatePdf(
                         bill);
     }
+    @Override
+    public List<Bill> getAllBills() {
+
+        return billRepository.findAll();
+    }
 }

@@ -18,60 +18,41 @@ public class DoctorServiceImpl
         implements DoctorService {
 
     @Autowired
-    private DoctorRepository
-            doctorRepository;
+    private DoctorRepository doctorRepository;
 
     @Autowired
-    private UserRepository
-            userRepository;
+    private UserRepository userRepository;
 
     @Override
     public Doctor addDoctor(
             DoctorRequestDto dto) {
 
-        User user =
-                new User();
+        User user = new User();
 
-        user.setName(
-                dto.getName());
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.DOCTOR);
 
-        user.setEmail(
-                dto.getEmail());
+        user = userRepository.save(user);
 
-        user.setPassword(
-                dto.getPassword());
-
-        user.setRole(
-                Role.DOCTOR);
-
-        user =
-                userRepository.save(
-                        user);
-
-        Doctor doctor =
-                new Doctor();
+        Doctor doctor = new Doctor();
 
         doctor.setUser(user);
-
         doctor.setSpecialization(
                 dto.getSpecialization());
-
         doctor.setQualification(
                 dto.getQualification());
-
         doctor.setExperience(
                 dto.getExperience());
 
-        return doctorRepository
-                .save(doctor);
+        return doctorRepository.save(doctor);
     }
 
     @Override
-    public List<Doctor>
-    getAllDoctors() {
+    public List<Doctor> getAllDoctors() {
 
-        return doctorRepository
-                .findAll();
+        return doctorRepository.findAll();
     }
 
     @Override
@@ -83,5 +64,63 @@ public class DoctorServiceImpl
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Doctor Not Found"));
+    }
+
+    @Override
+    public Doctor updateDoctor(
+            Long id,
+            DoctorRequestDto dto) {
+
+        Doctor doctor =
+                doctorRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Doctor Not Found"));
+
+        User user = doctor.getUser();
+
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+
+        if (dto.getPassword() != null
+                && !dto.getPassword().isBlank()) {
+            user.setPassword(
+                    dto.getPassword());
+        }
+
+        userRepository.save(user);
+
+        doctor.setSpecialization(
+                dto.getSpecialization());
+
+        doctor.setQualification(
+                dto.getQualification());
+
+        doctor.setExperience(
+                dto.getExperience());
+
+        return doctorRepository.save(
+                doctor);
+    }
+
+    @Override
+    public void deleteDoctor(
+            Long id) {
+
+        Doctor doctor =
+                doctorRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Doctor Not Found"));
+
+        User user = doctor.getUser();
+
+        doctorRepository.delete(doctor);
+
+        if (user != null) {
+            userRepository.delete(user);
+        }
     }
 }

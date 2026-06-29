@@ -19,7 +19,7 @@ export default function Navbar({ currentTab, setCurrentTab }) {
           <div className="flex items-center">
             {/* Click logo to go home */}
             <div className="cursor-pointer" onClick={() => setCurrentTab('home')}>
-              <Logo />
+              <Logo imgClassName="h-40" />
             </div>
           </div>
 
@@ -31,11 +31,10 @@ export default function Navbar({ currentTab, setCurrentTab }) {
                 <button
                   key={item.id}
                   onClick={() => setCurrentTab(item.id)}
-                  className={`text-[15px] font-medium transition-colors duration-200 py-2 border-b-2 ${
-                    isActive
-                      ? 'border-[#0B2C56] text-[#0B2C56] font-semibold'
-                      : 'border-transparent text-gray-600 hover:text-[#0B2C56] hover:border-gray-300'
-                  }`}
+                  className={`text-[15px] font-medium transition-colors duration-200 py-2 border-b-2 ${isActive
+                    ? 'border-[#0B2C56] text-[#0B2C56] font-semibold'
+                    : 'border-transparent text-gray-600 hover:text-[#0B2C56] hover:border-gray-300'
+                    }`}
                 >
                   {item.label}
                 </button>
@@ -45,11 +44,10 @@ export default function Navbar({ currentTab, setCurrentTab }) {
             {/* Book Appointment CTA */}
             <button
               onClick={() => setCurrentTab('book-appointment')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-[14px] font-semibold tracking-wide transition-all duration-200 cursor-pointer ${
-                currentTab === 'book-appointment'
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
-                  : 'bg-[#0B2C56] hover:bg-[#154175] text-white hover:shadow-md'
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-[14px] font-semibold tracking-wide transition-all duration-200 cursor-pointer ${currentTab === 'book-appointment'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                : 'bg-[#0B2C56] hover:bg-[#154175] text-white hover:shadow-md'
+                }`}
             >
               <svg
                 className="w-4.5 h-4.5"
@@ -114,11 +112,10 @@ export default function Navbar({ currentTab, setCurrentTab }) {
                     setCurrentTab(item.id);
                     setIsOpen(false);
                   }}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? 'bg-gray-50 text-[#0B2C56] font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-[#0B2C56]'
-                  }`}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${isActive
+                    ? 'bg-gray-50 text-[#0B2C56] font-semibold'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#0B2C56]'
+                    }`}
                 >
                   {item.label}
                 </button>

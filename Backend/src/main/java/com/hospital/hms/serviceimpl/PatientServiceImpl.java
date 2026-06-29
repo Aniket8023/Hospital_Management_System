@@ -3,6 +3,7 @@ package com.hospital.hms.serviceimpl;
 import com.hospital.hms.entity.Patient;
 import com.hospital.hms.repository.PatientRepository;
 import com.hospital.hms.service.PatientService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,11 @@ public class PatientServiceImpl
     public List<Patient> getAllPatients() {
 
         return patientRepository.findAll();
-
     }
 
     @Override
-    public Patient getPatientById(Long id) {
+    public Patient getPatientById(
+            Long id) {
 
         return patientRepository
                 .findById(id)
@@ -33,8 +34,7 @@ public class PatientServiceImpl
     }
 
     @Override
-    public List<Patient>
-    searchPatientByName(
+    public List<Patient> searchPatientByName(
             String name) {
 
         return patientRepository
@@ -108,4 +108,18 @@ public class PatientServiceImpl
                 .save(patient);
     }
 
+    @Override
+    public void deletePatient(
+            Long id) {
+
+        Patient patient =
+                patientRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Patient Not Found"));
+
+        patientRepository.delete(
+                patient);
+    }
 }

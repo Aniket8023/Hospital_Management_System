@@ -19,87 +19,112 @@ import java.util.List;
 import java.io.IOException;
 
 @Component
-public class JwtFilter
-        extends OncePerRequestFilter {
+public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsService
-            userDetailsService;
+    private UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain)
-            throws ServletException,
-            IOException {
+            throws ServletException, IOException {
 
-        String authHeader =
-                request.getHeader(
-                        "Authorization");
+        try {
 
-        String token = null;
-        String email = null;
+            System.out.println("\n========== JWT FILTER ==========");
+            System.out.println("Path : " + request.getServletPath());
 
-        if(authHeader != null
-                &&
-                authHeader.startsWith(
-                        "Bearer ")) {
+            String authHeader =
+                    request.getHeader("Authorization");
 
-            token =
-                    authHeader.substring(7);
+            System.out.println("Authorization Header : "
+                    + authHeader);
 
-            email =
-                    jwtUtil.extractEmail(
-                            token);
-        }
+            String token = null;
+            String email = null;
 
-        if(email != null
-                &&
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication()
-                        == null) {
+            if (authHeader != null
+                    && authHeader.startsWith("Bearer ")) {
 
-            UserDetails userDetails =
-                    userDetailsService
-                            .loadUserByUsername(
-                                    email);
+                token = authHeader.substring(7);
 
-            if(jwtUtil.validateToken(
-                    token,
-                    userDetails.getUsername())) {
+                System.out.println("Token : " + token);
 
-                String role =
-                        jwtUtil.extractRole(
-                                token);
+                email = jwtUtil.extractEmail(token);
 
-                UsernamePasswordAuthenticationToken
-                        authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                List.of(
-                                        new SimpleGrantedAuthority(
-                                                "ROLE_" + role)));
-
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(
-                                        request));
-
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(
-                                authToken);
+                System.out.println("Email from Token : "
+                        + email);
             }
+
+            if (email != null
+                    && SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    == null) {
+
+                UserDetails userDetails =
+                        userDetailsService
+                                .loadUserByUsername(email);
+
+                System.out.println(
+                        "UserDetails Username : "
+                                + userDetails.getUsername());
+
+                if (jwtUtil.validateToken(
+                        token,
+                        userDetails.getUsername())) {
+
+                    String role =
+                            jwtUtil.extractRole(token);
+
+                    System.out.println(
+                            "Role from Token : "
+                                    + role);
+
+                    UsernamePasswordAuthenticationToken
+                            authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    List.of(
+                                            new SimpleGrantedAuthority(
+                                                    "ROLE_" + role)));
+
+                    System.out.println(
+                            "Authorities : "
+                                    + authToken.getAuthorities());
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request));
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authToken);
+
+                    System.out.println(
+                            "Authentication SET successfully.");
+                } else {
+
+                    System.out.println(
+                            "Token validation FAILED.");
+                }
+            }
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "JWT FILTER ERROR : "
+                            + e.getMessage());
+
+            e.printStackTrace();
         }
 
-        filterChain.doFilter(
-                request,
-                response);
+        filterChain.doFilter(request, response);
     }
 }

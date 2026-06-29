@@ -76,7 +76,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         // 2. Get Doctor
         Doctor doctor =
                 doctorRepository
-                        .findFirstBy()
+                        .findById(dto.getDoctorId())
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Doctor Not Found"));
@@ -194,5 +194,43 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentRepository
                 .findByStatus(
                         status);
+    }
+    @Override
+    public Appointment updateAppointment(
+            Long id,
+            AppointmentRequestDto dto) {
+
+        Appointment appointment =
+                appointmentRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Appointment Not Found"));
+
+        appointment.setAppointmentDate(
+                dto.getAppointmentDate());
+
+        appointment.setAppointmentTime(
+                dto.getAppointmentTime());
+
+        appointment.setProblemDescription(
+                dto.getProblemDescription());
+
+        return appointmentRepository
+                .save(appointment);
+    }
+    @Override
+    public void deleteAppointment(
+            Long id) {
+
+        Appointment appointment =
+                appointmentRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Appointment Not Found"));
+
+        appointmentRepository
+                .delete(appointment);
     }
 }

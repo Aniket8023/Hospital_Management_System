@@ -23,4 +23,8 @@ public interface MedicalReportService {
     byte[] downloadReport(
             Long reportId)
             throws Exception;
+
+    void deleteReport(
+            Long reportId)
+            throws Exception;
 }

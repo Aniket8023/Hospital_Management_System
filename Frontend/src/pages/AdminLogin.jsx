@@ -19,7 +19,7 @@ export default function AdminLogin({ onLoginSuccess }) {
     if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.username || !form.password) {
       setError('Both fields are required.');
@@ -27,161 +27,129 @@ export default function AdminLogin({ onLoginSuccess }) {
     }
 
     setLoading(true);
-    // Simulate brief auth delay
-    setTimeout(() => {
-      if (
-        form.username === ADMIN_CREDENTIALS.username &&
-        form.password === ADMIN_CREDENTIALS.password
-      ) {
+    try {
+      const response = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: form.username, password: form.password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        if (data && data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        // store role and user if present
+        if (data && data.role) {
+          localStorage.setItem('role', data.role);
+        }
+        if (data && data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        // Login successful – set auth flag and proceed
         sessionStorage.setItem('shinde_admin_auth', 'true');
         onLoginSuccess();
       } else {
-        setError('Invalid username or password. Please try again.');
-        setLoading(false);
+        const data = await response.json();
+        setError(data.message || 'Invalid username or password.');
       }
-    }, 800);
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B2C56] via-[#1a4b87] to-[#0e3a6d] flex items-center justify-center p-4">
-      {/* Background pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#2B9CB5]/10 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-
-          {/* Top brand strip */}
-          <div className="bg-[#0B2C56] px-8 py-6 text-center space-y-3">
-            <div className="flex justify-center">
-              <div className="bg-white p-2 rounded-xl shadow-md inline-block">
-                <Logo showText={false} />
-              </div>
-            </div>
-            <div>
-              <h1 className="text-white font-extrabold text-xl tracking-wide">SHINDE HOSPITAL</h1>
-              <p className="text-blue-200 text-xs font-semibold tracking-widest uppercase mt-0.5">Administrative Portal</p>
-            </div>
+    <div className="min-h-screen bg-[#F3F6F9] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200 shadow-xl p-8 space-y-6">
+        
+        {/* Brand Logo & Welcome */}
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <Logo showText={true} imgClassName="h-16" />
           </div>
-
-          {/* Form body */}
-          <div className="px-8 py-8 space-y-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-2xl border border-blue-100 mb-3">
-                <span className="text-2xl">🔑</span>
-              </div>
-              <h2 className="text-xl font-extrabold text-[#0B2C56]">Admin Sign In</h2>
-              <p className="text-gray-400 text-xs mt-1">Enter your administrator credentials to continue</p>
-            </div>
-
-            {error && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl p-3.5 flex items-center gap-2">
-                <span>⚠️</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Username</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </span>
-                  <input
-                    type="text"
-                    name="username"
-                    value={form.username}
-                    onChange={handleChange}
-                    placeholder="Enter admin username"
-                    autoComplete="username"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-[#0B2C56] focus:ring-1 focus:ring-[#0B2C56]/30 transition"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Password</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="Enter password"
-                    autoComplete="current-password"
-                    className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-[#0B2C56] focus:ring-1 focus:ring-[#0B2C56]/30 transition"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(p => !p)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-[#0B2C56] hover:bg-[#154175] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer mt-2"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <span>Authenticating...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>🔓</span>
-                    <span>Sign In to Admin Portal</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Demo credentials hint */}
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1 text-center">
-              <p className="text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">Demo Credentials</p>
-              <p className="text-amber-700 text-xs font-mono">
-                Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>admin@123</strong>
-              </p>
-            </div>
+          <div className="pt-1">
+            <h2 className="text-xl font-bold text-gray-800">Welcome Back!</h2>
+            <p className="text-gray-400 text-xs mt-1">Please login to your account</p>
           </div>
-
-          {/* Back to main site link */}
-          <div className="border-t border-gray-100 px-8 py-4 bg-gray-50 text-center">
-            <a
-              href="#/"
-              className="text-[#0B2C56] text-xs font-semibold hover:underline flex items-center justify-center gap-1"
-            >
-              ← Back to Patient Website
-            </a>
-          </div>
-
         </div>
 
-        {/* Copyright */}
-        <p className="text-center text-white/40 text-[10px] mt-5 font-medium">
-          © 2026 Shinde Hospital. All Rights Reserved.
-        </p>
+        {error && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg p-3 text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Username / Email</label>
+            <input
+              type="text"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="admin@shindehospital.com"
+              autoComplete="username"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500 transition font-medium"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500 transition font-medium"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(p => !p)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer text-xs"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs">
+            <label className="flex items-center gap-1.5 text-gray-500 font-semibold cursor-pointer">
+              <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <span>Remember Me</span>
+            </label>
+            <a href="#/admin/login" className="text-blue-600 hover:underline font-bold">Forgot Password?</a>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 bg-[#0B2C56] hover:bg-blue-800 disabled:bg-gray-300 text-white font-bold text-sm rounded-lg shadow transition cursor-pointer"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div className="text-center pt-2">
+          <a
+            href="#/"
+            className="text-gray-500 hover:text-[#0B2C56] text-xs font-semibold hover:underline"
+          >
+            ← Back to Patient Website
+          </a>
+        </div>
+
       </div>
     </div>
   );
 }
+

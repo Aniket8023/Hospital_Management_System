@@ -10,19 +10,15 @@ import com.hospital.hms.entity.Patient;
 public interface PatientRepository
         extends JpaRepository<Patient, Long> {
 
-    Optional<Patient>
-    findByAadharNumber(
+    Optional<Patient> findByAadharNumber(
             String aadharNumber);
 
-    Optional<Patient>
-    findById(Long id);
+    Optional<Patient> findById(
+            Long id);
 
-    List<Patient>
-    findByFullNameContainingIgnoreCase(
+    List<Patient> findByFullNameContainingIgnoreCase(
             String fullName);
 
-    Optional<Patient>
-    findByMobileNumber(
+    Optional<Patient> findByMobileNumber(
             String mobileNumber);
-
 }

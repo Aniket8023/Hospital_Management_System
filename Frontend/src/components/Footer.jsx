@@ -9,9 +9,9 @@ export default function Footer({ setCurrentTab }) {
           
           {/* Brand/About Col */}
           <div className="flex flex-col space-y-4">
-            {/* Logo forced to look clean on dark bg: let's style it or render a custom SVG logo for footer */}
-            <div className="bg-white p-2 rounded-md inline-block self-start shadow-sm">
-              <Logo showText={true} />
+            {/* Logo on footer */}
+            <div className="bg-white px-4 py-2 rounded-xl inline-block self-start shadow-sm">
+              <Logo showText={true} imgClassName="h-12" />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mt-2">
               We are committed to providing world-class ENT care with compassion, integrity and advanced medical technology.

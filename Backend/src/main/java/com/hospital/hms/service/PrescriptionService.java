@@ -16,6 +16,7 @@ public interface PrescriptionService {
     List<Prescription>
     getPatientPrescriptionHistory(
             Long patientId);
+    List<Prescription> getAllPrescriptions();
 
     byte[] generatePrescriptionPdf(
             Long prescriptionId)

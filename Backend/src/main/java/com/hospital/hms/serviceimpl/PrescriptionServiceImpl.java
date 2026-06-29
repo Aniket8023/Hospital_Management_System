@@ -31,33 +31,47 @@ public class PrescriptionServiceImpl
     private AppointmentRepository appointmentRepository;
 
     @Override
+
     public Prescription createPrescription(
             PrescriptionRequestDto dto) {
+
+        System.out.println("===== SERVICE START =====");
+        System.out.println("Patient Id : " + dto.getPatientId());
+        System.out.println("Doctor Id : " + dto.getDoctorId());
+        System.out.println("Appointment Id : " + dto.getAppointmentId());
 
         Patient patient =
                 patientRepository.findById(
                                 dto.getPatientId())
-                        .orElseThrow();
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "PATIENT NOT FOUND"));
 
         Doctor doctor =
                 doctorRepository.findById(
                                 dto.getDoctorId())
-                        .orElseThrow();
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "DOCTOR NOT FOUND"));
 
-        Appointment appointment =
-                appointmentRepository.findById(
-                                dto.getAppointmentId())
-                        .orElseThrow();
+        Appointment appointment = null;
+
+        if (dto.getAppointmentId() != null) {
+
+            appointment =
+                    appointmentRepository.findById(
+                                    dto.getAppointmentId())
+                            .orElseThrow(() ->
+                                    new RuntimeException(
+                                            "APPOINTMENT NOT FOUND"));
+        }
 
         Prescription prescription =
                 new Prescription();
 
         prescription.setPatient(patient);
-
         prescription.setDoctor(doctor);
-
-        prescription.setAppointment(
-                appointment);
+        prescription.setAppointment(appointment);
 
         prescription.setDiagnosis(
                 dto.getDiagnosis());
@@ -72,8 +86,7 @@ public class PrescriptionServiceImpl
                 prescriptionRepository.save(
                         prescription);
 
-        for(var medicine :
-                dto.getMedicines()) {
+        for (var medicine : dto.getMedicines()) {
 
             PrescriptionMedicine pm =
                     new PrescriptionMedicine();
@@ -94,7 +107,17 @@ public class PrescriptionServiceImpl
                     .save(pm);
         }
 
+        System.out.println(
+                "PRESCRIPTION SAVED SUCCESSFULLY. ID = "
+                        + prescription.getId());
+
         return prescription;
+    }
+    @Override
+    public List<Prescription>
+    getAllPrescriptions() {
+
+        return prescriptionRepository.findAll();
     }
 
     @Override

@@ -16,77 +16,62 @@ public class PatientController {
 
     @PostMapping
     public Patient createPatient(
-            @RequestBody
-            Patient patient){
+            @RequestBody Patient patient) {
 
-        return patientService
-                .createPatient(
-                        patient);
+        return patientService.createPatient(patient);
     }
 
     @PutMapping("/{id}")
     public Patient updatePatient(
+            @PathVariable Long id,
+            @RequestBody Patient patient) {
 
-            @PathVariable
-            Long id,
-
-            @RequestBody
-            Patient patient){
-
-        return patientService
-                .updatePatient(
-                        id,
-                        patient);
+        return patientService.updatePatient(
+                id,
+                patient);
     }
 
     @GetMapping
     public List<Patient> getAllPatients() {
 
         return patientService.getAllPatients();
-
     }
 
     @GetMapping("/{id}")
     public Patient getPatientById(
-            @PathVariable Long id){
+            @PathVariable Long id) {
 
-        return patientService
-                .getPatientById(id);
+        return patientService.getPatientById(id);
     }
 
     @GetMapping("/search/name")
-    public List<Patient>
-    searchByName(
-
-            @RequestParam
-            String name){
+    public List<Patient> searchByName(
+            @RequestParam String name) {
 
         return patientService
-                .searchPatientByName(
-                        name);
+                .searchPatientByName(name);
     }
 
     @GetMapping("/search/mobile")
-    public Patient
-    searchByMobile(
-
-            @RequestParam
-            String mobile){
+    public Patient searchByMobile(
+            @RequestParam String mobile) {
 
         return patientService
-                .searchPatientByMobile(
-                        mobile);
+                .searchPatientByMobile(mobile);
     }
 
     @GetMapping("/search/aadhar")
-    public Patient
-    searchByAadhar(
-
-            @RequestParam
-            String aadhar){
+    public Patient searchByAadhar(
+            @RequestParam String aadhar) {
 
         return patientService
-                .searchPatientByAadhar(
-                        aadhar);
+                .searchPatientByAadhar(aadhar);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletePatient(
+            @PathVariable Long id) {
+
+        patientService.deletePatient(id);
     }
 }

@@ -1,48 +1,80 @@
 import React, { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function BookAppointment({
-  doctors,
   departments,
-  handleBookAppointment,
   selectedDoctorName,
   setSelectedDoctorName
 }) {
-  // Local Form state
+  const API = 'http://localhost:8080';
+
+  // State
+  const [doctors, setDoctors] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form state
   const [formData, setFormData] = useState({
     patientName: '',
     mobileNumber: '',
     aadharNumber: '',
     emailAddress: '',
     department: '',
-    selectDoctor: '',
+    doctorId: '',
     preferredDate: '',
     preferredTime: '',
-    reasonForVisit: ''
+    reasonForVisit: '',
+    age: '',
+    gender: '',
+    address: ''
   });
 
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-
-  // If a doctor was selected from the Doctor list page, auto-fill it
+  // Step 1: Load Doctors From Backend
   useEffect(() => {
-    if (selectedDoctorName) {
-      const doc = doctors.find(d => d.name === selectedDoctorName);
+    fetch(`${API}/doctor`, {
+      headers: { ...getAuthHeaders() }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setDoctors(data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  // Pre-fill doctor if passed from prop
+  useEffect(() => {
+    if (selectedDoctorName && doctors.length > 0) {
+      const doc = doctors.find(d => d.user?.name === selectedDoctorName || d.name === selectedDoctorName);
       if (doc) {
         setFormData(prev => ({
           ...prev,
-          selectDoctor: doc.name,
-          department: doc.department
+          doctorId: doc.id,
+          department: doc.department || ''
         }));
       }
-      // Clear selection helper so it doesn't override future edits
       setSelectedDoctorName('');
     }
   }, [selectedDoctorName, doctors, setSelectedDoctorName]);
 
+  // Step 4: Load Slots automatically
+  useEffect(() => {
+    if (formData.doctorId && formData.preferredDate) {
+      fetch(`${API}/doctor-schedule/slots?doctorId=${formData.doctorId}&date=${formData.preferredDate}`, {
+        headers: { ...getAuthHeaders() }
+      })
+        .then(res => res.json())
+        .then(data => setSlots(data))
+        .catch(err => console.error(err));
+    } else {
+      setSlots([]); // clear slots if doc or date missing
+    }
+  }, [formData.doctorId, formData.preferredDate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear validation error when typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
@@ -53,8 +85,8 @@ export default function BookAppointment({
     setFormData(prev => ({
       ...prev,
       department: dept,
-      selectDoctor: '', // Reset doctor when dept changes
-      preferredTime: '' // Reset slot
+      doctorId: '', 
+      preferredTime: '' 
     }));
   };
 
@@ -62,62 +94,85 @@ export default function BookAppointment({
     const tempErrors = {};
     if (!formData.patientName.trim()) tempErrors.patientName = "Full Name is required";
     
-    // Mobile Validation
     if (!formData.mobileNumber) {
       tempErrors.mobileNumber = "Mobile Number is required";
     } else if (formData.mobileNumber.length !== 10 || isNaN(formData.mobileNumber)) {
-      tempErrors.mobileNumber = "Mobile Number must be exactly 10 digits";
+      tempErrors.mobileNumber = "Must be 10 digits";
     }
 
-    // Aadhar Validation
     if (!formData.aadharNumber) {
       tempErrors.aadharNumber = "Aadhar Number is required";
     } else if (formData.aadharNumber.length !== 12 || isNaN(formData.aadharNumber)) {
-      tempErrors.aadharNumber = "Aadhar Number must be exactly 12 digits";
+      tempErrors.aadharNumber = "Must be 12 digits";
     }
 
+    if (!formData.age) tempErrors.age = "Age is required";
+    if (!formData.gender) tempErrors.gender = "Gender is required";
+    if (!formData.address) tempErrors.address = "Address is required";
     if (!formData.department) tempErrors.department = "Department is required";
-    if (!formData.selectDoctor) tempErrors.selectDoctor = "Doctor is required";
-    if (!formData.preferredDate) tempErrors.preferredDate = "Preferred Date is required";
-    if (!formData.preferredTime) tempErrors.preferredTime = "Preferred Time is required";
+    if (!formData.doctorId) tempErrors.doctorId = "Doctor is required";
+    if (!formData.preferredDate) tempErrors.preferredDate = "Date is required";
+    if (!formData.preferredTime) tempErrors.preferredTime = "Time is required";
 
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // Step 6: Submit API
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Call the parent state handler to save the appointment
-    handleBookAppointment(formData);
+    const payload = {
+      doctorId: Number(formData.doctorId),
+      fullName: formData.patientName,
+      mobileNumber: formData.mobileNumber,
+      aadharNumber: formData.aadharNumber,
+      age: Number(formData.age),
+      gender: formData.gender,
+      address: formData.address,
+      appointmentDate: formData.preferredDate,
+      appointmentTime: formData.preferredTime,
+      problemDescription: formData.reasonForVisit
+    };
 
-    setSubmitted(true);
-    // Reset Form
-    setFormData({
-      patientName: '',
-      mobileNumber: '',
-      aadharNumber: '',
-      emailAddress: '',
-      department: '',
-      selectDoctor: '',
-      preferredDate: '',
-      preferredTime: '',
-      reasonForVisit: ''
-    });
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API}/appointments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify(payload)
+      });
 
-    // Reset success banner after 6 seconds
-    setTimeout(() => setSubmitted(false), 6000);
+      if (res.ok) {
+        setSubmitted(true);
+        setFormData({
+          patientName: '', mobileNumber: '', aadharNumber: '', emailAddress: '',
+          department: '', doctorId: '', preferredDate: '', preferredTime: '',
+          reasonForVisit: '', age: '', gender: '', address: ''
+        });
+        setTimeout(() => setSubmitted(false), 6000);
+      } else {
+        const errText = await res.text();
+        alert("Booking failed: " + errText);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Get active doctor's time slots
-  const activeDoc = doctors.find(d => d.name === formData.selectDoctor);
-  const timeSlots = activeDoc ? activeDoc.timeSlots : [];
+  const inputClass = (name) => `w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${
+    errors[name] ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
+  }`;
 
   return (
     <div className="w-full text-gray-800 font-sans pb-16">
-      
-      {/* 1. Header Banner */}
       <div className="bg-gradient-to-r from-[#0B2C56] to-[#1a4b87] text-white py-14 px-4 text-center">
         <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-wide">
           Book Appointment
@@ -135,7 +190,6 @@ export default function BookAppointment({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
-          {/* 2. Main Appointment Form Block (Cols 2/3) */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-150 p-6 md:p-8 shadow-xs text-left">
             <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
               <span className="text-2xl bg-blue-50 p-2 rounded-lg text-[#0B2C56]">📅</span>
@@ -150,7 +204,7 @@ export default function BookAppointment({
                 <span className="text-5xl inline-block">📋</span>
                 <h3 className="font-bold text-xl text-emerald-800">Booking Request Placed!</h3>
                 <p className="text-sm text-emerald-600 max-w-md mx-auto leading-relaxed">
-                  Your appointment has been logged in the system as <strong>Pending</strong>. An administrator will review details shortly to confirm.
+                  Your appointment has been successfully booked in the system.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
@@ -162,21 +216,15 @@ export default function BookAppointment({
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 
-                {/* Row 1: Full Name & Mobile Number */}
+                {/* Name & Mobile */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
                     <label className="text-xs font-bold text-gray-600 mb-1">Full Name *</label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">👤</span>
                       <input
-                        type="text"
-                        name="patientName"
-                        value={formData.patientName}
-                        onChange={handleInputChange}
-                        placeholder="Enter your full name"
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${
-                          errors.patientName ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        type="text" name="patientName" value={formData.patientName} onChange={handleInputChange}
+                        placeholder="Enter your full name" className={inputClass('patientName')}
                       />
                     </div>
                     {errors.patientName && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.patientName}</span>}
@@ -187,37 +235,23 @@ export default function BookAppointment({
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">📞</span>
                       <input
-                        type="tel"
-                        name="mobileNumber"
-                        value={formData.mobileNumber}
-                        onChange={handleInputChange}
-                        placeholder="Enter 10 digit mobile number"
-                        maxLength="10"
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${
-                          errors.mobileNumber ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        type="tel" name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange}
+                        placeholder="Enter 10 digit mobile" maxLength="10" className={inputClass('mobileNumber')}
                       />
                     </div>
                     {errors.mobileNumber && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.mobileNumber}</span>}
                   </div>
                 </div>
 
-                {/* Row 2: Aadhar Number & Email Address */}
+                {/* Aadhar & Email */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
                     <label className="text-xs font-bold text-gray-600 mb-1">Aadhar Number *</label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">💳</span>
                       <input
-                        type="text"
-                        name="aadharNumber"
-                        value={formData.aadharNumber}
-                        onChange={handleInputChange}
-                        placeholder="Enter 12 digit Aadhar number"
-                        maxLength="12"
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${
-                          errors.aadharNumber ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        type="text" name="aadharNumber" value={formData.aadharNumber} onChange={handleInputChange}
+                        placeholder="12 digit Aadhar" maxLength="12" className={inputClass('aadharNumber')}
                       />
                     </div>
                     {errors.aadharNumber && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.aadharNumber}</span>}
@@ -228,37 +262,63 @@ export default function BookAppointment({
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">✉️</span>
                       <input
-                        type="email"
-                        name="emailAddress"
-                        value={formData.emailAddress}
-                        onChange={handleInputChange}
-                        placeholder="Enter email address"
-                        className="w-full pl-9 p-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-400"
+                        type="email" name="emailAddress" value={formData.emailAddress} onChange={handleInputChange}
+                        placeholder="Optional" className="w-full pl-9 p-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-400"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Row 3: Select Doctor & Department */}
+                {/* Age, Gender, Address */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-gray-600 mb-1">Age *</label>
+                    <input
+                      type="number" name="age" value={formData.age} onChange={handleInputChange}
+                      placeholder="Age" className={`w-full p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${errors.age ? 'border-rose-400' : 'border-gray-200'}`}
+                    />
+                    {errors.age && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.age}</span>}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-gray-600 mb-1">Gender *</label>
+                    <select
+                      name="gender" value={formData.gender} onChange={handleInputChange}
+                      className={`w-full p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${errors.gender ? 'border-rose-400' : 'border-gray-200'}`}
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    {errors.gender && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.gender}</span>}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-gray-600 mb-1">Address *</label>
+                    <input
+                      type="text" name="address" value={formData.address} onChange={handleInputChange}
+                      placeholder="City/Area" className={`w-full p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 ${errors.address ? 'border-rose-400' : 'border-gray-200'}`}
+                    />
+                    {errors.address && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.address}</span>}
+                  </div>
+                </div>
+
+                {/* Department & Doctor */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
                     <label className="text-xs font-bold text-gray-600 mb-1">Department *</label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">🏥</span>
                       <select
-                        name="department"
-                        value={formData.department}
-                        onChange={handleDepartmentChange}
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 cursor-pointer appearance-none ${
-                          errors.department ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        name="department" value={formData.department} onChange={handleDepartmentChange}
+                        className={inputClass('department')}
                       >
                         <option value="">-- Select Department --</option>
-                        {departments.map((dept) => (
+                        {departments?.map((dept) => (
                           <option key={dept} value={dept}>{dept}</option>
                         ))}
                       </select>
-                      <span className="absolute right-3.5 inset-y-0 flex items-center text-gray-400 pointer-events-none text-xs">▼</span>
                     </div>
                     {errors.department && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.department}</span>}
                   </div>
@@ -268,38 +328,34 @@ export default function BookAppointment({
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">🩺</span>
                       <select
-                        name="selectDoctor"
-                        value={formData.selectDoctor}
-                        onChange={handleInputChange}
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 cursor-pointer appearance-none ${
-                          errors.selectDoctor ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        name="doctorId" value={formData.doctorId} onChange={handleInputChange}
+                        className={inputClass('doctorId')}
                       >
                         <option value="">-- Select Doctor --</option>
                         {doctors
-                          .filter(doc => !formData.department || doc.department === formData.department)
+                          .filter(doc => {
+                            if (!formData.department) return true;
+                            const dept = formData.department.toLowerCase().trim();
+                            const spec = (doc.specialization || '').toLowerCase().trim();
+                            const docDept = (doc.department || '').toLowerCase().trim();
+                            return spec === dept || spec.includes(dept) || dept.includes(spec) || docDept.includes(dept);
+                          })
                           .map((doc) => (
-                            <option key={doc.id} value={doc.name}>{doc.name}</option>
+                            <option key={doc.id} value={doc.id}>{doc.user?.name || doc.name}</option>
                           ))}
                       </select>
-                      <span className="absolute right-3.5 inset-y-0 flex items-center text-gray-400 pointer-events-none text-xs">▼</span>
                     </div>
-                    {errors.selectDoctor && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.selectDoctor}</span>}
+                    {errors.doctorId && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.doctorId}</span>}
                   </div>
                 </div>
 
-                {/* Row 4: Preferred Date & Preferred Time */}
+                {/* Date & Time */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
                     <label className="text-xs font-bold text-gray-600 mb-1">Preferred Date *</label>
                     <input
-                      type="date"
-                      name="preferredDate"
-                      value={formData.preferredDate}
-                      onChange={handleInputChange}
-                      className={`w-full p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 cursor-pointer ${
-                        errors.preferredDate ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                      }`}
+                      type="date" name="preferredDate" value={formData.preferredDate} onChange={handleInputChange}
+                      className={`w-full p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 cursor-pointer ${errors.preferredDate ? 'border-rose-400' : 'border-gray-200'}`}
                     />
                     {errors.preferredDate && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.preferredDate}</span>}
                   </div>
@@ -309,142 +365,97 @@ export default function BookAppointment({
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">⏰</span>
                       <select
-                        name="preferredTime"
-                        value={formData.preferredTime}
-                        onChange={handleInputChange}
-                        className={`w-full pl-9 p-2.5 border rounded-lg text-sm bg-white focus:outline-none focus:ring-1 cursor-pointer appearance-none ${
-                          errors.preferredTime ? 'border-rose-400 focus:ring-rose-400' : 'border-gray-200 focus:border-blue-400 focus:ring-blue-400'
-                        }`}
+                        name="preferredTime" value={formData.preferredTime} onChange={handleInputChange}
+                        className={inputClass('preferredTime')}
+                        disabled={!formData.doctorId || !formData.preferredDate}
                       >
                         <option value="">-- Select Time Slot --</option>
-                        {timeSlots.length > 0 ? (
-                          timeSlots.map(slot => (
-                            <option key={slot} value={slot}>{slot}</option>
-                          ))
+                        {slots.length > 0 ? (
+                          slots.map((slot, index) => {
+                            const timeStr = typeof slot === 'object' ? slot.slotTime : slot;
+                            const isAvailable = typeof slot === 'object' ? slot.available : true;
+                            return (
+                              <option key={index} value={timeStr} disabled={!isAvailable}>
+                                {timeStr} {!isAvailable ? "(Booked)" : ""}
+                              </option>
+                            );
+                          })
                         ) : (
-                          <>
-                            <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
-                            <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
-                            <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
-                            <option value="06:00 PM - 08:00 PM">06:00 PM - 08:00 PM</option>
-                          </>
+                          <option value="" disabled>No slots available</option>
                         )}
                       </select>
-                      <span className="absolute right-3.5 inset-y-0 flex items-center text-gray-400 pointer-events-none text-xs">▼</span>
                     </div>
                     {errors.preferredTime && <span className="text-[10px] text-rose-500 mt-1 font-semibold">⚠️ {errors.preferredTime}</span>}
                   </div>
                 </div>
 
-                {/* Reason for Visit */}
+                {/* Reason */}
                 <div className="flex flex-col">
                   <label className="text-xs font-bold text-gray-600 mb-1">Reason for Visit</label>
                   <div className="relative">
                     <span className="absolute top-3 left-3 text-gray-400 text-sm">✏️</span>
                     <textarea
-                      name="reasonForVisit"
-                      value={formData.reasonForVisit}
-                      onChange={handleInputChange}
-                      rows="4"
-                      placeholder="Briefly describe your symptoms or reason for visit"
+                      name="reasonForVisit" value={formData.reasonForVisit} onChange={handleInputChange}
+                      rows="3" placeholder="Briefly describe your symptoms"
                       className="w-full pl-9 p-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-400 resize-none"
                     ></textarea>
                   </div>
                 </div>
 
-                {/* Submit Action */}
                 <div className="border-t border-gray-100 pt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
                   <span className="text-gray-400 text-[10.5px] font-semibold">
                     * All fields marked with an asterisk (*) are required.
                   </span>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-8 py-3 bg-[#0B2C56] hover:bg-[#154175] text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-8 py-3 bg-[#0B2C56] hover:bg-[#154175] disabled:opacity-50 text-white rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
                   >
-                    <span>📅</span>
-                    <span>Book Appointment</span>
+                    {isSubmitting ? '⏳ Booking...' : '📅 Book Appointment'}
                   </button>
                 </div>
-
               </form>
             )}
           </div>
 
-          {/* 3. Sidebar: "Why Book With Us?" (Col 1/3) */}
           <div className="space-y-6">
-            
-            {/* Why Book Info */}
             <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-xs text-left space-y-5">
               <h3 className="font-extrabold text-[#0B2C56] text-base border-b border-gray-100 pb-2.5">
                 Why Book With Us?
               </h3>
-
               <div className="space-y-4">
-                
                 <div className="flex gap-3">
-                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    ✓
-                  </span>
+                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">✓</span>
                   <div>
                     <h4 className="font-bold text-gray-800 text-xs">Expert Doctors</h4>
-                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">
-                      Consult with highly qualified and experienced ENT specialists.
-                    </p>
+                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">Consult with highly qualified specialists.</p>
                   </div>
                 </div>
-
                 <div className="flex gap-3">
-                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    ✓
-                  </span>
+                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">✓</span>
                   <div>
                     <h4 className="font-bold text-gray-800 text-xs">Easy & Quick Booking</h4>
-                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">
-                      Book your appointment slot in just a few clicks.
-                    </p>
+                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">Book your appointment in just a few clicks.</p>
                   </div>
                 </div>
-
                 <div className="flex gap-3">
-                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    ✓
-                  </span>
+                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">✓</span>
                   <div>
                     <h4 className="font-bold text-gray-800 text-xs">Patient First Approach</h4>
-                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">
-                      Your comfort, hygiene, and wellness is our absolute top priority.
-                    </p>
+                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">Your comfort and wellness is our priority.</p>
                   </div>
                 </div>
-
-                <div className="flex gap-3">
-                  <span className="text-lg bg-blue-50 text-[#0B2C56] w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    ✓
-                  </span>
-                  <div>
-                    <h4 className="font-bold text-gray-800 text-xs">Secure & Confidential</h4>
-                    <p className="text-gray-500 text-[11px] mt-0.5 leading-snug">
-                      Your health records and clinical history are kept completely private.
-                    </p>
-                  </div>
-                </div>
-
               </div>
             </div>
-
-            {/* Need Help CTA block */}
             <div className="bg-[#f0f6fc] border border-blue-100 rounded-2xl p-6 text-left flex gap-4 items-center">
               <span className="text-3xl">📞</span>
               <div>
                 <h4 className="font-bold text-[#0B2C56] text-xs uppercase tracking-wider">Need Help?</h4>
                 <p className="font-black text-[#0B2C56] text-base mt-0.5">8888551743</p>
-                <p className="font-black text-[#0B2C56] text-base">7058094146</p>
                 <p className="text-gray-400 text-[9px] mt-1 font-semibold">We are here to assist you!</p>
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </div>
