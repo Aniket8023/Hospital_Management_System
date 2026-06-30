@@ -21,7 +21,7 @@ public class Doctor {
 
     private Integer experience;
 
-
+    private String phone;
 
     @OneToOne
     @JsonIgnoreProperties({

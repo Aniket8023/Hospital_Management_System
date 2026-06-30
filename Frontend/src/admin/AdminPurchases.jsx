@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 import { getAuthHeaders } from '../utils/auth';
 function AdminPurchases() {
@@ -21,7 +22,7 @@ function AdminPurchases() {
       const res = await fetch(`${API}/purchases`, { headers: { ...getAuthHeaders() } });
       if (res.ok) setPurchases(await res.json());
     } catch (e) {
-      console.error('Failed to load purchases', e);
+      toast.error(String('Failed to load purchases'));
     }
   };
 
@@ -31,7 +32,7 @@ function AdminPurchases() {
       const res = await fetch(`${API}/suppliers`, { headers: { ...getAuthHeaders() } });
       if (res.ok) setSuppliers(await res.json());
     } catch (e) {
-      console.error('Failed to load suppliers', e);
+      toast.error(String('Failed to load suppliers'));
     }
   };
 
@@ -40,7 +41,7 @@ function AdminPurchases() {
       const res = await fetch(`${API}/inventory`, { headers: { ...getAuthHeaders() } });
       if (res.ok) setMedicines(await res.json());
     } catch (e) {
-      console.error('Failed to load medicines', e);
+      toast.error(String('Failed to load medicines'));
     }
   };
 
@@ -88,7 +89,7 @@ function AdminPurchases() {
         setFormError('Failed to create purchase');
       }
     } catch (e) {
-      console.error('Purchase error', e);
+      toast.error(String('Purchase error'));
       setFormError('Network error');
     }
   };

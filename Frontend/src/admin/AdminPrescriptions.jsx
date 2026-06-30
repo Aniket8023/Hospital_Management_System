@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import {
   FileText, Pill, User, UserRound, CalendarDays, Download,
   Eye, Printer, Clock, Stethoscope, Plus, X, Search,
@@ -118,7 +119,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
       try {
         const res = await fetch(`${API}/patients/search/name?name=${encodeURIComponent(patientSearch)}`, { headers: getAuthHeaders() });
         if (res.ok) setPatientOptions(await res.json());
-      } catch (e) { console.error(e); }
+      } catch (e) { toast.error(String(e)); }
     }, 300);
     return () => clearTimeout(t);
   }, [patientSearch, patients]);
@@ -133,7 +134,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
     try {
       const res = await fetch(`${API}/prescriptions`, { headers: getAuthHeaders() });
       if (res.ok) setPrescriptions(await res.json());
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   };
   useEffect(() => { fetchPrescriptions(); }, []);
 
@@ -147,7 +148,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
         if (dr.ok) setDetailPresc(await dr.json());
         const pr = await fetch(`${API}/prescriptions/${prescriptionId}/pdf`, { headers: getAuthHeaders() });
         if (pr.ok) setPdfUrl(URL.createObjectURL(await pr.blob()));
-      } catch (e) { console.error(e); } finally { setLoadingDetail(false); }
+      } catch (e) { toast.error(String(e)); } finally { setLoadingDetail(false); }
     };
     load();
   }, [prescriptionId]);
@@ -165,7 +166,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
     try {
       const res = await fetch(`${API}/prescriptions/${id}/pdf`, { headers: getAuthHeaders() });
       if (res.ok) { const u = URL.createObjectURL(await res.blob()); window.open(u, '_blank'); }
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   };
 
   // ── Names helpers ──
@@ -208,7 +209,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
     try {
       const res = await fetch(`${API}/prescriptions/${presc.id}`, { headers: getAuthHeaders() });
       if (res.ok) { setSelectedPrescription(await res.json()); setViewModalOpen(true); }
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   };
 
   // ── Open add modal ──
@@ -637,7 +638,7 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
               ))}
             </div>
 
-            <form onSubmit={submitPrescription}>
+            <div>
               <div style={{ padding: '20px 24px', overflowY: 'auto', maxHeight: '55vh' }}>
                 {formError && (
                   <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 10, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>
@@ -783,11 +784,11 @@ export default function AdminPrescriptions({ patients = [], appointments = [], h
                   {modalTab !== 'medicines' ? (
                     <button type="button" onClick={() => setModalTab(modalTab === 'patient' ? 'diagnosis' : 'medicines')} style={{ padding: '9px 22px', background: '#0B2C56', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Next →</button>
                   ) : (
-                    <button type="submit" style={{ padding: '9px 22px', background: '#0B2C56', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Save Prescription</button>
+                    <button type="button" onClick={submitPrescription} style={{ padding: '9px 22px', background: '#0B2C56', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Save Prescription</button>
                   )}
                 </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

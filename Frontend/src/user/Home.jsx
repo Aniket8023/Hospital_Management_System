@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import visionImg from '../assets/vision.jpg';
+import toast from 'react-hot-toast';
+import teamImg from '../assets/team.jpg';
 
 const API = 'http://localhost:8080';
 
@@ -46,9 +47,8 @@ export default function Home({ setCurrentTab }) {
         {slides.map((slide, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -96,9 +96,8 @@ export default function Home({ setCurrentTab }) {
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                idx === currentSlide ? 'bg-[#0B2C56] scale-125' : 'bg-gray-400/60'
-              }`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-[#0B2C56] scale-125' : 'bg-gray-400/60'
+                }`}
             ></button>
           ))}
         </div>
@@ -149,7 +148,7 @@ export default function Home({ setCurrentTab }) {
 
           <div className="rounded-xl overflow-hidden shadow-md border-4 border-white aspect-video md:aspect-auto md:h-80">
             <img
-              src={visionImg}
+              src={teamImg}
               alt="Shinde Hospital Founders"
               className="w-full h-full object-cover"
             />
@@ -163,7 +162,7 @@ export default function Home({ setCurrentTab }) {
               At Shinde Hospital, our vision is to provide exceptional healthcare services with compassion, innovation and integrity. We aim to build a healthier community by delivering world-class medical treatment at affordable costs. We specialize in ENT and neck conditions, ensuring that our patients receive top-tier specialist care in Satara.
             </p>
             <div className="border-l-4 border-[#2B9CB5] pl-4 py-1.5">
-              <p className="font-bold text-[#0B2C56] text-[16px]">- Dr. Rajendra Shinde</p>
+              <p className="font-bold text-[#0B2C56] text-[16px]">- Dr. Akshay Raju Shinde</p>
               <p className="text-gray-500 text-xs mt-0.5">Founder &amp; Managing Director</p>
             </div>
           </div>
@@ -217,7 +216,7 @@ function QuickAppointmentForm({ setCurrentTab }) {
           setApiFetchedDepts(depts);
         }
       })
-      .catch(err => console.error('Failed to load doctors:', err));
+      .catch(err => toast.error(String('Failed to load doctors:')));
   }, []);
 
   // Fetch time slots when doctorId + date are both selected
@@ -227,7 +226,7 @@ function QuickAppointmentForm({ setCurrentTab }) {
         .then(res => res.json())
         .then(data => setSlots(Array.isArray(data) ? data : []))
         .catch(err => {
-          console.error('Failed to load slots:', err);
+          toast.error(String('Failed to load slots:'));
           setSlots([]);
         });
     } else {
@@ -330,7 +329,7 @@ function QuickAppointmentForm({ setCurrentTab }) {
         setFormError('Booking failed: ' + errText);
       }
     } catch (err) {
-      console.error(err);
+      toast.error(String(err));
       setFormError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);

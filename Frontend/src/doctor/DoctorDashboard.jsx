@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function DoctorDashboard({ doctors, appointments, resolveAppointment, loggedInDoctorId }) {
   // Clinical Session States
@@ -23,7 +24,7 @@ export default function DoctorDashboard({ doctors, appointments, resolveAppointm
   const handleCompleteCheckup = (e, id) => {
     e.preventDefault();
     if (!notes.trim() || !prescription.trim()) {
-      alert('Please fill in both checkup notes and prescription details.');
+      toast.error('Please fill in both checkup notes and prescription details.');
       return;
     }
     resolveAppointment(id, notes, prescription);

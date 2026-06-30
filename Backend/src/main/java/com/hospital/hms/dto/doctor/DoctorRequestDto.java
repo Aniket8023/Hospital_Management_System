@@ -16,4 +16,6 @@ public class DoctorRequestDto {
     private String qualification;
 
     private Integer experience;
+
+    private String phone;
 }

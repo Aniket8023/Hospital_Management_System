@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 
 /**
@@ -49,7 +50,7 @@ export default function AdminInventory() {
     try {
       const data = await fetchJSON(`${API}/inventory`);
       setMedicines(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) { toast.error(String(err)); }
     finally { setLoading(false); }
   };
 
@@ -59,7 +60,7 @@ export default function AdminInventory() {
     try {
       const data = await fetchJSON(`${API}/inventory/low-stock`);
       setLowStock(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) { toast.error(String(err)); }
     finally { setLoadingLow(false); }
   };
 
@@ -69,7 +70,7 @@ export default function AdminInventory() {
     try {
       const data = await fetchJSON(`${API}/inventory/expiry-alert`);
       setExpiryAlert(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) { toast.error(String(err)); }
     finally { setLoadingExpiry(false); }
   };
 
@@ -90,7 +91,7 @@ export default function AdminInventory() {
           `${API}/inventory/search?keyword=${encodeURIComponent(search)}`
         );
         setMedicines(data || []);
-      } catch (err) { console.error(err); }
+      } catch (err) { toast.error(String(err)); }
       finally { setLoading(false); }
     }, 300);
     return () => clearTimeout(timeout);
@@ -110,12 +111,12 @@ export default function AdminInventory() {
           price: Number(newMed.price),
         }),
       });
-      alert('Medicine added successfully!');
+      toast.success('Medicine added successfully!');
       setNewMed({ medicineName: '', category: '', quantity: 0, price: 0, expiryDate: '', manufacturer: '' });
       loadMedicines();
       loadLowStock();
       loadExpiryAlert();
-    } catch (err) { console.error(err); alert('Failed to add medicine'); }
+    } catch (err) { toast.error(String(err)); toast.error('Failed to add medicine'); }
     finally { setSaving(false); }
   };
 
@@ -142,12 +143,12 @@ export default function AdminInventory() {
           price: Number(editingMed.price),
         }),
       });
-      alert('Medicine updated!');
+      toast.success('Medicine updated!');
       cancelEdit();
       loadMedicines();
       loadLowStock();
       loadExpiryAlert();
-    } catch (err) { console.error(err); alert('Failed to update'); }
+    } catch (err) { toast.error(String(err)); toast.error('Failed to update'); }
     finally { setSaving(false); }
   };
 
@@ -161,7 +162,7 @@ export default function AdminInventory() {
       setMedicines(prev => prev.filter(m => m.id !== id));
       loadLowStock();
       loadExpiryAlert();
-    } catch (err) { console.error(err); }
+    } catch (err) { toast.error(String(err)); }
   };
 
   // ── Helpers for expiry ──

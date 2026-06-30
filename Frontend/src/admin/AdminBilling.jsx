@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import { ArrowLeft, Printer, Download, Edit, FileText } from 'lucide-react';
 
@@ -46,7 +47,7 @@ export default function AdminBilling({ patients = [], hash }) {
           setPdfUrl(blobUrl);
         }
       } catch (e) {
-        console.error('Failed to load bill details/pdf', e);
+        toast.error(String('Failed to load bill details/pdf'));
       } finally {
         setLoadingDetail(false);
       }
@@ -150,7 +151,7 @@ export default function AdminBilling({ patients = [], hash }) {
             setPatientOptions(Array.isArray(data) ? data : []);
           }
         } catch (e) {
-          console.error(e);
+          toast.error(String(e));
         }
       };
       fetchPatients();
@@ -176,10 +177,10 @@ export default function AdminBilling({ patients = [], hash }) {
         setBills(Array.isArray(data) ? data : []);
       } else {
         const text = await res.text();
-        console.error('Failed to load bills:', res.status, text);
+        toast.error(String('Failed to load bills:'));
       }
     } catch (e) {
-      console.error('Failed to load bills', e);
+      toast.error(String('Failed to load bills'));
     } finally {
       setLoadingBills(false);
     }
@@ -198,9 +199,9 @@ export default function AdminBilling({ patients = [], hash }) {
 
   // Save bill
   const handleSave = async () => {
-    if (!selectedPatientId) { alert('Please select a patient'); return; }
-    if (!selectedAppointmentId) { alert('Please select an appointment'); return; }
-    if (billItems.some(it => !it.itemName)) { alert('Please fill in all item names'); return; }
+    if (!selectedPatientId) { toast.error('Please select a patient'); return; }
+    if (!selectedAppointmentId) { toast.error('Please select an appointment'); return; }
+    if (billItems.some(it => !it.itemName)) { toast.error('Please fill in all item names'); return; }
 
     const payload = {
       patientId: Number(selectedPatientId),
@@ -222,7 +223,7 @@ export default function AdminBilling({ patients = [], hash }) {
       const text = await res.text();
       console.log('BILL CREATE STATUS:', res.status, 'RESPONSE:', text);
       if (res.ok) {
-        alert('Invoice created successfully!');
+        toast.success('Invoice created successfully!');
         // Refetch the bills list to show the new entry
         await fetchBills(filterPatientId);
         setSelectedPatientId('');
@@ -232,11 +233,11 @@ export default function AdminBilling({ patients = [], hash }) {
         setBillNo('B-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'));
         setDate(new Date().toISOString().split('T')[0]);
       } else {
-        alert('Failed to create invoice: ' + text);
+        toast.error('Failed to create invoice: ' + text);
       }
     } catch (e) {
-      console.error(e);
-      alert('Network error: ' + e.message);
+      toast.error(String(e));
+      toast.error('Network error: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -251,7 +252,7 @@ export default function AdminBilling({ patients = [], hash }) {
         body: JSON.stringify({ paymentStatus: status })
       });
       if (res.ok) fetchBills(filterPatientId);
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   };
 
   // Download PDF
@@ -269,8 +270,8 @@ export default function AdminBilling({ patients = [], hash }) {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      console.error(e);
-      alert('Failed to download invoice');
+      toast.error(String(e));
+      toast.error('Failed to download invoice');
     }
   };
 

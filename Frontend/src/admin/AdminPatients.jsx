@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import AdminPatientProfile from './AdminPatientProfile';
 
@@ -80,12 +81,12 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
             fetch(`http://localhost:8080/patients/search/name?name=${encodeURIComponent(searchName)}`, { headers: { ...getAuthHeaders() } })
               .then(res => res.json())
               .then(data => setFilteredPatients(data))
-              .catch(() => console.error('Search failed'));
+              .catch(() => toast.error(String('Search failed')));
           } else if (searchAadhar) {
             fetch(`http://localhost:8080/patients/search/aadhar?aadhar=${encodeURIComponent(searchAadhar)}`, { headers: { ...getAuthHeaders() } })
               .then(res => res.json())
               .then(data => setFilteredPatients([data]))
-              .catch(() => console.error('Search failed'));
+              .catch(() => toast.error(String('Search failed')));
           } else {
             setFilteredPatients(patients);
           }
@@ -111,7 +112,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
             </thead>
             <tbody className="divide-y divide-gray-150">
               {filteredPatients.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50/50 transition">
+                <tr key={p.id} onClick={() => setViewingPatientId(p.id)} className="hover:bg-gray-50/50 transition cursor-pointer">
                   <td className="p-4 font-bold text-gray-700">{p.id}</td>
                   <td className="p-4 font-extrabold text-[#0B2C56]">{p.fullName}</td>
                   <td className="p-4 text-gray-600 font-medium">{p.age}</td>
@@ -132,7 +133,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
                         </svg>
                       </button>
                       <button
-                        onClick={() => openEditModal(p)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
                         className="text-blue-600 hover:text-blue-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-blue-50 transition"
                         title="Edit Patient"
                       >
@@ -141,7 +142,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
                         </svg>
                       </button>
                       <button
-                        onClick={() => deletePatient(p.id)}
+                        onClick={(e) => { e.stopPropagation(); deletePatient(p.id); }}
                         className="text-rose-600 hover:text-rose-800 cursor-pointer font-bold flex items-center justify-center p-1 rounded hover:bg-rose-50 transition"
                         title="Delete Patient"
                       >

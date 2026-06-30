@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
   Phone, MapPin, CreditCard, Calendar, User, ArrowLeft,
   Stethoscope, FileText, FlaskConical, ClipboardList,
@@ -28,7 +29,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
+        toast.error(String(err));
         setError(err.message);
         setLoading(false);
       });
@@ -158,7 +159,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
             <div>
               <p style={{ fontSize: 11, color: '#93c5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' }}>Last Visit</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>
-                {lastVisit ? fmtDate(lastVisit) : 'No previous visit'}
+                {lastVisit ? fmtDate(lastVisit) : fmtDate(new Date())}
               </p>
             </div>
             <div>
@@ -181,7 +182,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
           label="Appointments"
           count={appointments.length}
           subLabel="Last"
-          subValue={lastVisit ? fmtDate(lastVisit) : 'N/A'}
+          subValue={lastVisit ? fmtDate(lastVisit) : fmtDate(new Date())}
         />
         <SummaryCard
           icon={<FileText size={22} />}
@@ -307,7 +308,13 @@ export default function AdminPatientProfile({ patientId, onBack }) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {prescriptions.map((px, idx) => (
-                    <div key={idx} style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div 
+                      key={idx} 
+                      onClick={() => { window.location.hash = `/admin/prescriptions/details/${px.id}`; }}
+                      style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.08)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+                    >
                       <div style={{ height: 3, background: 'linear-gradient(90deg, #16a34a, #4ade80)' }}></div>
                       <div style={{ padding: '18px 22px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
@@ -319,9 +326,24 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                             </p>
                           </div>
                         </div>
-                        <p style={{ fontSize: 13, color: '#475569', whiteSpace: 'pre-wrap', lineHeight: 1.7, background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9', margin: 0 }}>
-                          {px.prescriptionText || 'No details available'}
-                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9' }}>
+                          {px.doctor && px.doctor.user && (
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Doctor:</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#0B2C56' }}>Dr. {px.doctor.user.name}</span>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Diagnosis:</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{px.diagnosis || 'No details available'}</span>
+                          </div>
+                          {px.advice && (
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Advice:</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{px.advice}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -364,11 +386,11 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                               link.click();
                               document.body.removeChild(link);
                             } catch (e) {
-                              console.error('Error downloading:', e);
-                              alert('Could not download file.');
+                              toast.error(String('Error downloading:'));
+                              toast.error('Could not download file.');
                             }
                           } else {
-                            alert('No file data available.');
+                            toast.error('No file data available.');
                           }
                         }}
                         style={{ marginTop: 'auto', width: '100%', padding: '10px 0', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12, fontWeight: 700, color: '#0B2C56', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}

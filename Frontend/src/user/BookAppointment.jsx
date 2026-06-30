@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 
 export default function BookAppointment({
@@ -40,7 +41,7 @@ export default function BookAppointment({
       .then(data => {
         if (Array.isArray(data)) setDoctors(data);
       })
-      .catch(err => console.error(err));
+      .catch(err => toast.error(String(err)));
   }, []);
 
   // Pre-fill doctor if passed from prop
@@ -66,7 +67,7 @@ export default function BookAppointment({
       })
         .then(res => res.json())
         .then(data => setSlots(data))
-        .catch(err => console.error(err));
+        .catch(err => toast.error(String(err)));
     } else {
       setSlots([]); // clear slots if doc or date missing
     }
@@ -157,11 +158,11 @@ export default function BookAppointment({
         setTimeout(() => setSubmitted(false), 6000);
       } else {
         const errText = await res.text();
-        alert("Booking failed: " + errText);
+        toast.error("Booking failed: " + errText);
       }
     } catch (err) {
-      console.error(err);
-      alert("Network error");
+      toast.error(String(err));
+      toast.error("Network error");
     } finally {
       setIsSubmitting(false);
     }
