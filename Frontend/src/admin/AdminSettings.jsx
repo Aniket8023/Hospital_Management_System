@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { showLocalStorageErrors } from '../utils/errors';
 
 export default function AdminSettings() {
   const [hospitalName, setHospitalName] = useState('Shinde ENT Hospital');
+
+  useEffect(() => {
+    showLocalStorageErrors();
+  }, []);
   const [address, setAddress] = useState('Near Balajicool, Shivajinagar, Mehkar, Dist. Buldhana');
   const [contact, setContact] = useState('8888551743');
   const [email, setEmail] = useState('admin@shindehospital.com');

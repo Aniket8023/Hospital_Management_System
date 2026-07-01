@@ -307,46 +307,139 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                 <EmptyState icon={<FileText size={36} />} message="No prescriptions found for this patient." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {prescriptions.map((px, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => { window.location.hash = `/admin/prescriptions/details/${px.id}`; }}
-                      style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.08)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
-                    >
-                      <div style={{ height: 3, background: 'linear-gradient(90deg, #16a34a, #4ade80)' }}></div>
-                      <div style={{ padding: '18px 22px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
-                          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16a34a', fontWeight: 900, fontSize: 14 }}>Rx</div>
-                          <div>
-                            <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>Prescription Record</p>
-                            <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <Clock size={11} /> {fmtDate(px.prescriptionDate)}
-                            </p>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9' }}>
-                          {px.doctor && px.doctor.user && (
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Doctor:</span>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: '#0B2C56' }}>Dr. {px.doctor.user.name}</span>
+                  {prescriptions.map((px, idx) => {
+                    const presIdFormatted = px.prescriptionDate 
+                      ? `PRES-${px.prescriptionDate.split('-')[0]}-${String(px.id).padStart(5, '0')}`
+                      : `PRES-${String(px.id).padStart(5, '0')}`;
+                    return (
+                      <div 
+                        key={idx} 
+                        style={{ 
+                          background: '#fff', 
+                          borderRadius: 16, 
+                          border: '1px solid #e2e8f0', 
+                          overflow: 'hidden', 
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
+                          transition: 'transform 0.2s, box-shadow 0.2s' 
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+                      >
+                        {/* Top emerald accent bar */}
+                        <div style={{ height: 3, background: 'linear-gradient(90deg, #059669, #34d399)' }}></div>
+
+                        <div style={{ padding: '18px 22px' }}>
+                          {/* Header row */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
+                            <div style={{ 
+                              width: 46, height: 46, borderRadius: 12, 
+                              background: '#ecfdf5', border: '1px solid #a7f3d0', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              color: '#059669', fontWeight: 900, fontSize: 16, flexShrink: 0
+                            }}>
+                              Rx
                             </div>
-                          )}
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Diagnosis:</span>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{px.diagnosis || 'No details available'}</span>
-                          </div>
-                          {px.advice && (
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Advice:</span>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{px.advice}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                                Prescription Record
+                              </p>
+                              <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Clock size={11} /> {fmtDate(px.prescriptionDate)}
+                              </p>
                             </div>
-                          )}
+                            <span style={{
+                              fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 6,
+                              background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                              letterSpacing: '0.05em', fontFamily: 'monospace',
+                            }}>
+                              {presIdFormatted}
+                            </span>
+                          </div>
+
+                          {/* Detail panel */}
+                          <div style={{ 
+                            display: 'flex', flexDirection: 'column', gap: 10, 
+                            background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9',
+                            marginBottom: 16
+                          }}>
+                            {px.doctor && px.doctor.user && (
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <Stethoscope size={13} color="#94a3b8" />
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Doctor:</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#0B2C56' }}>Dr. {px.doctor.user.name}</span>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                              <Activity size={13} color="#94a3b8" />
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Diagnosis:</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{px.diagnosis || 'No details available'}</span>
+                            </div>
+                            {px.advice && (
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <FileText size={13} color="#94a3b8" />
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Advice:</span>
+                                <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>{px.advice}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action button row */}
+                          <div style={{ display: 'flex', gap: 12 }}>
+                            <button
+                              onClick={() => { window.location.hash = `/admin/prescriptions/details/${px.id}`; }}
+                              style={{
+                                flex: 1, padding: '10px 0',
+                                background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10,
+                                fontSize: 12, fontWeight: 700, color: '#0B2C56', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#e2e8f0'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; }}
+                            >
+                              <FileText size={13} /> View Details
+                            </button>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const res = await fetch(`${API}/prescriptions/${px.id}/pdf`, {
+                                    headers: { ...getAuthHeaders() }
+                                  });
+                                  if (!res.ok) throw new Error('Failed to download PDF');
+                                  const blob = await res.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const link = document.createElement('a');
+                                  link.href = url;
+                                  link.download = `Prescription_${presIdFormatted}.pdf`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  window.URL.revokeObjectURL(url);
+                                  toast.success('Prescription PDF downloaded successfully!');
+                                } catch (err) {
+                                  toast.error('Error downloading prescription PDF.');
+                                }
+                              }}
+                              style={{
+                                flex: 1, padding: '10px 0',
+                                background: 'linear-gradient(135deg, #059669, #047857)',
+                                border: 'none', borderRadius: 10,
+                                fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                transition: 'all 0.2s',
+                                boxShadow: '0 2px 6px rgba(5,150,105,0.15)',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(5,150,105,0.3)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 6px rgba(5,150,105,0.15)'; }}
+                            >
+                              <Download size={13} /> Download PDF
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -358,49 +451,155 @@ export default function AdminPatientProfile({ patientId, onBack }) {
               {reports.length === 0 ? (
                 <EmptyState icon={<FlaskConical size={36} />} message="No medical reports found for this patient." />
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
-                  {reports.map((rep, idx) => (
-                    <div key={idx} style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'box-shadow 0.2s' }}>
-                      <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '2px 8px' }}>
-                          {fmtDate(rep.uploadDate)}
-                        </span>
-                      </div>
-                      <div style={{ width: 60, height: 60, borderRadius: 16, background: '#faf5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9333ea' }}>
-                        <FlaskConical size={28} />
-                      </div>
-                      <div>
-                        <h4 style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>{rep.reportName}</h4>
-                        <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, margin: 0, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {rep.description || 'Uploaded report document'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (rep.fileData) {
-                            try {
-                              const link = document.createElement('a');
-                              link.href = rep.fileData;
-                              link.download = rep.reportName || 'Report';
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                            } catch (e) {
-                              toast.error(String('Error downloading:'));
-                              toast.error('Could not download file.');
-                            }
-                          } else {
-                            toast.error('No file data available.');
-                          }
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {reports.map((rep, idx) => {
+                    // Report type color mapping
+                    const typeColors = {
+                      'Lab Report': { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe', gradient: 'linear-gradient(135deg, #3b82f6, #60a5fa)' },
+                      'X-Ray': { bg: '#faf5ff', text: '#9333ea', border: '#e9d5ff', gradient: 'linear-gradient(135deg, #9333ea, #c084fc)' },
+                      'MRI': { bg: '#fdf2f8', text: '#db2777', border: '#fbcfe8', gradient: 'linear-gradient(135deg, #db2777, #f472b6)' },
+                      'CT Scan': { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa', gradient: 'linear-gradient(135deg, #ea580c, #fb923c)' },
+                      'Blood Test': { bg: '#fef2f2', text: '#dc2626', border: '#fecaca', gradient: 'linear-gradient(135deg, #dc2626, #f87171)' },
+                      'Ultrasound': { bg: '#f0fdfa', text: '#0d9488', border: '#99f6e4', gradient: 'linear-gradient(135deg, #0d9488, #2dd4bf)' },
+                    };
+                    const tc = typeColors[rep.reportType] || { bg: '#f0f9ff', text: '#0369a1', border: '#bae6fd', gradient: 'linear-gradient(135deg, #0B2C56, #1e5494)' };
+
+                    // Detect file extension from filePath or reportName
+                    const filePath = rep.filePath || rep.reportName || '';
+                    const ext = filePath.split('.').pop()?.toUpperCase() || 'FILE';
+                    const fileExt = ['PDF', 'JPG', 'JPEG', 'PNG', 'DICOM', 'DCM', 'DOC', 'DOCX'].includes(ext) ? ext : 'FILE';
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          background: '#fff',
+                          borderRadius: 16,
+                          border: '1px solid #e2e8f0',
+                          overflow: 'hidden',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                          cursor: 'default',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
                         }}
-                        style={{ marginTop: 'auto', width: '100%', padding: '10px 0', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12, fontWeight: 700, color: '#0B2C56', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#0B2C56'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#0B2C56'; }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
                       >
-                        <Download size={13} /> Download
-                      </button>
-                    </div>
-                  ))}
+                        {/* Accent bar */}
+                        <div style={{ height: 3, background: tc.gradient }}></div>
+
+                        <div style={{ padding: '18px 22px' }}>
+                          {/* Header row: icon + title + badges */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
+                            {/* File type icon */}
+                            <div style={{
+                              width: 46, height: 46, borderRadius: 12,
+                              background: tc.bg, border: `1px solid ${tc.border}`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              flexShrink: 0,
+                            }}>
+                              <FlaskConical size={22} color={tc.text} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {rep.reportName}
+                              </p>
+                              <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Clock size={11} /> {fmtDate(rep.uploadDate)}
+                              </p>
+                            </div>
+                            {/* Badges */}
+                            <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              {rep.reportType && (
+                                <span style={{
+                                  fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20,
+                                  background: tc.bg, color: tc.text, border: `1px solid ${tc.border}`,
+                                  textTransform: 'uppercase', letterSpacing: '0.04em',
+                                }}>
+                                  {rep.reportType}
+                                </span>
+                              )}
+                              <span style={{
+                                fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 6,
+                                background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+                                letterSpacing: '0.05em', fontFamily: 'monospace',
+                              }}>
+                                .{fileExt}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Details section */}
+                          <div style={{
+                            display: 'flex', flexDirection: 'column', gap: 10,
+                            background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9',
+                            marginBottom: 16,
+                          }}>
+                            {rep.doctor && rep.doctor.user && (
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <Stethoscope size={13} color="#94a3b8" />
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Doctor:</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#0B2C56' }}>Dr. {rep.doctor.user.name}</span>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                              <FileText size={13} color="#94a3b8" />
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Description:</span>
+                              <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>{rep.description || 'Uploaded report document'}</span>
+                            </div>
+                            {rep.reportType && (
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <FlaskConical size={13} color="#94a3b8" />
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Type:</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{rep.reportType}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Download button */}
+                          <button
+                            onClick={async () => {
+                              if (rep.id) {
+                                try {
+                                  const res = await fetch(`${API}/reports/${rep.id}/download`, {
+                                    headers: { ...getAuthHeaders() }
+                                  });
+                                  if (!res.ok) throw new Error('Failed to download file');
+                                  const blob = await res.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const link = document.createElement('a');
+                                  link.href = url;
+                                  link.download = rep.reportName || 'Report';
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  window.URL.revokeObjectURL(url);
+                                  toast.success('Report downloaded successfully!');
+                                } catch (e) {
+                                  toast.error('Error downloading file.');
+                                }
+                              } else {
+                                toast.error('No file data available.');
+                              }
+                            }}
+                            style={{
+                              width: '100%', padding: '11px 0',
+                              background: 'linear-gradient(135deg, #0B2C56, #1a4478)',
+                              border: 'none', borderRadius: 10,
+                              fontSize: 12, fontWeight: 700, color: '#fff',
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                              transition: 'all 0.25s ease',
+                              boxShadow: '0 2px 8px rgba(11,44,86,0.15)',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(11,44,86,0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(11,44,86,0.15)'; e.currentTarget.style.transform = 'none'; }}
+                          >
+                            <Download size={14} /> Download Report
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

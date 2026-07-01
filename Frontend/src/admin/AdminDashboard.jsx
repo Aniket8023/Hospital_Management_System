@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
+import { showLocalStorageErrors } from '../utils/errors';
 export default function AdminDashboard({ appointments = [], doctors = [], setAdminTab }) {
   const API = 'http://localhost:8080';
   
@@ -13,6 +14,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    showLocalStorageErrors();
     const fetchData = async () => {
       try {
         const [apptsRes, docsRes, patsRes, billsRes] = await Promise.all([

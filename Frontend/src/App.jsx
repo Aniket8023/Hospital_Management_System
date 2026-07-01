@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 // Data imports
 import {
@@ -20,6 +20,7 @@ import { getAuthHeaders } from './utils/auth';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
 // Patient page imports
+import { showLocalStorageErrors } from './utils/errors';
 import Home from './user/Home';
 import About from './user/About';
 import Services from './user/Services';
@@ -404,6 +405,11 @@ function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  // Show localStorage errors on mount and route changes
+  useEffect(() => {
+    showLocalStorageErrors();
+  }, [hash]);
+
   // ---------- Auth state ----------
   const [adminAuthed, setAdminAuthed] = useState(() => sessionStorage.getItem('shinde_admin_auth') === 'true');
   const [doctorAuthed, setDoctorAuthed] = useState(() => sessionStorage.getItem('shinde_doctor_auth') === 'true');
@@ -673,62 +679,81 @@ function App() {
     // Force login if at base admin path or not authenticated
     if (!adminAuthed || hash === '/admin' || hash === '/admin/') {
       if (hash !== '/admin/login') navigate('/admin/login');
-      return <AdminLogin onLoginSuccess={handleAdminLogin} />;
+      return (
+        <>
+          <Toaster position="top-right" />
+          <AdminLogin onLoginSuccess={handleAdminLogin} />
+        </>
+      );
     }
     // Authenticated: render admin portal
     return (
-      <AdminPortal
-        hash={hash}
-        appointments={appointments}
-        doctors={doctors}
-        patients={patients}
-        reports={reports}
-        prescriptions={prescriptions}
-        bills={bills}
-        addDoctor={addDoctor}
-        editDoctor={editDoctor}
-        deleteDoctor={deleteDoctor}
-        addPatient={addPatient}
-        editPatient={editPatient}
-        deletePatient={deletePatient}
-        updateAppointmentStatus={updateAppointmentStatus}
-        deleteAppointment={deleteAppointment}
-        addAppointment={addAppointment}
-        editAppointment={editAppointment}
-        savePrescription={savePrescription}
-        saveBill={saveBill}
-        addReport={addReport}
-        onLogout={handleAdminLogout}
-      />
+      <>
+        <Toaster position="top-right" />
+        <AdminPortal
+          hash={hash}
+          appointments={appointments}
+          doctors={doctors}
+          patients={patients}
+          reports={reports}
+          prescriptions={prescriptions}
+          bills={bills}
+          addDoctor={addDoctor}
+          editDoctor={editDoctor}
+          deleteDoctor={deleteDoctor}
+          addPatient={addPatient}
+          editPatient={editPatient}
+          deletePatient={deletePatient}
+          updateAppointmentStatus={updateAppointmentStatus}
+          deleteAppointment={deleteAppointment}
+          addAppointment={addAppointment}
+          editAppointment={editAppointment}
+          savePrescription={savePrescription}
+          saveBill={saveBill}
+          addReport={addReport}
+          onLogout={handleAdminLogout}
+        />
+      </>
     );
   }
 
   // Doctor routes
   if (hash.startsWith('/doctor')) {
     if (!doctorAuthed || hash === '/doctor/login') {
-      return <DoctorLogin doctors={doctors} onLoginSuccess={handleDoctorLogin} />;
+      return (
+        <>
+          <Toaster position="top-right" />
+          <DoctorLogin doctors={doctors} onLoginSuccess={handleDoctorLogin} />
+        </>
+      );
     }
     return (
-      <DoctorPortal
-        doctors={doctors}
-        appointments={appointments}
-        resolveAppointment={resolveAppointment}
-        loggedInDoctorId={loggedInDoctorId}
-        onLogout={handleDoctorLogout}
-      />
+      <>
+        <Toaster position="top-right" />
+        <DoctorPortal
+          doctors={doctors}
+          appointments={appointments}
+          resolveAppointment={resolveAppointment}
+          loggedInDoctorId={loggedInDoctorId}
+          onLogout={handleDoctorLogout}
+        />
+      </>
     );
   }
 
   // Default: Patient-facing public site
   return (
-    <PatientSite
-      hash={hash}
-      doctors={doctors}
-      departments={INITIAL_DEPARTMENTS}
-      services={INITIAL_SERVICES}
-      appointments={appointments}
-      handleBookAppointment={handleBookAppointment}
-    />
+    <>
+      <Toaster position="top-right" />
+      <PatientSite
+        hash={hash}
+        doctors={doctors}
+        departments={INITIAL_DEPARTMENTS}
+        services={INITIAL_SERVICES}
+        appointments={appointments}
+        handleBookAppointment={handleBookAppointment}
+      />
+    </>
   );
 }
 

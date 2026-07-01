@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import teamImg from '../assets/team.jpg';
+import { showLocalStorageErrors } from '../utils/errors';
 
 const API = 'http://localhost:8080';
 
@@ -30,6 +31,11 @@ export default function Home({ setCurrentTab }) {
       tab: "doctors"
     }
   ];
+
+  // Show local storage errors on mount
+  useEffect(() => {
+    showLocalStorageErrors();
+  }, []);
 
   // Auto slide effect
   useEffect(() => {
