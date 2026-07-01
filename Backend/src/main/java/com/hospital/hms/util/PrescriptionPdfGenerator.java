@@ -40,7 +40,7 @@ public class PrescriptionPdfGenerator {
             java.net.URL logoUrl = PrescriptionPdfGenerator.class.getResource("/logo.png");
             if (logoUrl != null) {
                 Image logoImg = Image.getInstance(logoUrl);
-                logoImg.scaleToFit(80, 80);
+                logoImg.scaleToFit(120, 120);
                 logoImg.setAlignment(Element.ALIGN_CENTER);
                 logoCell.addElement(logoImg);
             }
@@ -65,7 +65,7 @@ public class PrescriptionPdfGenerator {
         textCell.addElement(p2);
         
         Font addrFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Paragraph p3 = new Paragraph("Pune, Maharashtra | Phone: +91 98765 43210", addrFont);
+        Paragraph p3 = new Paragraph("Mehkar, Maharashtra | Phone: +91 70580 94146", addrFont);
         p3.setAlignment(Element.ALIGN_CENTER);
         p3.setSpacingBefore(2);
         textCell.addElement(p3);

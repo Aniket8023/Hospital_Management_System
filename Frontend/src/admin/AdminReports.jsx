@@ -264,11 +264,25 @@ export default function AdminReports({ patients = [] }) {
   return (
     <div className="p-6">
 
-      <h2 className="text-2xl font-bold mb-6">
-        Medical Reports
-      </h2>
+      <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
 
-      <div className="bg-white p-5 rounded shadow mb-6">
+    <div>
+        <h1 className="text-3xl font-bold text-[#0B2C56]">
+            Medical Reports
+        </h1>
+
+        <p className="text-gray-500 text-sm mt-1">
+            Upload, download and manage patient medical reports.
+        </p>
+    </div>
+
+
+
+</div>
+
+
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
 
         <div className="grid md:grid-cols-2 gap-4">
 
@@ -402,25 +416,50 @@ export default function AdminReports({ patients = [] }) {
           />
         </div>
 
-        <button
+              <button
           onClick={handleUpload}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
+          className="
+            mt-6
+            px-6
+            py-3
+            rounded-xl
+            bg-[#0B2C56]
+            hover:bg-[#154175]
+            text-white
+            font-semibold
+            shadow-md
+            transition-all
+            duration-200
+            cursor-pointer
+        "
         >
-          Upload Report
+            📤 Upload Report
         </button>
 
       </div>
 
-      <div className="bg-white p-5 rounded shadow">
+     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-8">
 
-        <h3 className="font-bold mb-4">
-          Reports
+        <div className="flex justify-between items-center mb-5">
+
+    <div>
+
+        <h3 className="text-xl font-bold text-[#0B2C56]">
+            Uploaded Reports
         </h3>
+
+        <p className="text-sm text-gray-500">
+            Download or delete uploaded medical reports.
+        </p>
+
+    </div>
+
+</div>
 
         <table className="w-full border">
 
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-[#F8FAFC] text-gray-500 uppercase text-xs tracking-wider">
 
               <th className="p-2">
                 ID
@@ -450,8 +489,9 @@ export default function AdminReports({ patients = [] }) {
             {reports.map(
               (r) => (
                 <tr
-                  key={r.id}
-                >
+    key={r.id}
+    className="hover:bg-blue-50 transition"
+>
                   <td className="p-2">
                     {r.id}
                   </td>
@@ -472,26 +512,46 @@ export default function AdminReports({ patients = [] }) {
 
                     <div className="flex gap-3">
 
-                      <button
-                        onClick={() =>
-                          downloadReport(
-                            r.id,
-                            r.reportName
-                          )
-                        }
-                        className="text-blue-600"
-                      >
-                        Download
-                      </button>
+                     <button
+    onClick={() =>
+        downloadReport(
+            r.id,
+            r.reportName
+        )
+    }
+    className="
+        px-3
+        py-1.5
+        rounded-lg
+        bg-blue-50
+        text-blue-700
+        font-semibold
+        hover:bg-blue-100
+        transition
+        cursor-pointer
+    "
+>
+    ⬇ Download
+</button>
 
                       <button
-                        onClick={() =>
-                          deleteReport(r.id)
-                        }
-                        className="text-red-600"
-                      >
-                        Delete
-                      </button>
+    onClick={() =>
+        deleteReport(r.id)
+    }
+    className="
+        px-3
+        py-1.5
+        rounded-lg
+        bg-red-50
+        text-red-700
+        font-semibold
+        hover:bg-red-100
+        transition
+        cursor-pointer
+    "
+>
+    🗑 Delete
+</button>
 
                     </div>
 

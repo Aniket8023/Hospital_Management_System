@@ -27,32 +27,138 @@ public class InvoicePdfGenerator {
         document.open();
 
         // 1. HEADER SECTION — full landscape logo centered
-        Image logoImg = null;
+//        Image logoImg = null;
+//        try {
+//            java.net.URL logoUrl = InvoicePdfGenerator.class.getResource("/logo.png");
+//            if (logoUrl != null) {
+//                logoImg = Image.getInstance(logoUrl);
+//                // 1024x682 aspect ratio ~1.5 — scaleToFit(250,85) → height-limited: 127×85 pts
+//                logoImg.scaleToFit(250, 85);
+//                logoImg.setAlignment(Element.ALIGN_CENTER);
+//                document.add(logoImg);
+//            }
+//        } catch (Exception e) {
+//            System.err.println("Could not load logo: " + e.getMessage());
+//        }
+//
+//        if (logoImg == null) {
+//            Font fallbackFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, NAVY_BLUE);
+//            Paragraph fallback = new Paragraph("SHINDE ENT HOSPITAL", fallbackFont);
+//            fallback.setAlignment(Element.ALIGN_CENTER);
+//            document.add(fallback);
+//        }
+//
+//        // Blue Divider Line
+//        LineSeparator ls = new LineSeparator(1.5f, 100, NAVY_BLUE, Element.ALIGN_CENTER, -5);
+//        document.add(new Chunk(ls));
+//        document.add(new Paragraph(" "));
+
+        // ======================================================
+// 1. PROFESSIONAL HOSPITAL HEADER
+// ======================================================
+
+        PdfPTable headerTable = new PdfPTable(2);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{1.2f, 5f});
+        headerTable.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+
+// ---------- LEFT : LOGO ----------
+        PdfPCell logoCell = new PdfPCell();
+        logoCell.setBorder(Rectangle.NO_BORDER);
+        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
         try {
-            java.net.URL logoUrl = InvoicePdfGenerator.class.getResource("/logo.png");
+
+            java.net.URL logoUrl =
+                    InvoicePdfGenerator.class.getResource("/logo.png");
+
             if (logoUrl != null) {
-                logoImg = Image.getInstance(logoUrl);
-                // 1024x682 aspect ratio ~1.5 — scaleToFit(250,85) → height-limited: 127×85 pts
-                logoImg.scaleToFit(250, 85);
-                logoImg.setAlignment(Element.ALIGN_CENTER);
-                document.add(logoImg);
+
+                Image logo = Image.getInstance(logoUrl);
+
+                logo.scaleToFit(110, 110);
+
+                logoCell.addElement(logo);
             }
+
         } catch (Exception e) {
-            System.err.println("Could not load logo: " + e.getMessage());
+            System.out.println("Logo not found : " + e.getMessage());
         }
 
-        if (logoImg == null) {
-            Font fallbackFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, NAVY_BLUE);
-            Paragraph fallback = new Paragraph("SHINDE ENT HOSPITAL", fallbackFont);
-            fallback.setAlignment(Element.ALIGN_CENTER);
-            document.add(fallback);
-        }
+// ---------- RIGHT : HOSPITAL DETAILS ----------
+        PdfPCell textCell = new PdfPCell();
+        textCell.setBorder(Rectangle.NO_BORDER);
+        textCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-        // Blue Divider Line
-        LineSeparator ls = new LineSeparator(1.5f, 100, NAVY_BLUE, Element.ALIGN_CENTER, -5);
-        document.add(new Chunk(ls));
+        Font hospitalFont =
+                new Font(
+                        Font.FontFamily.TIMES_ROMAN,
+                        28,
+                        Font.BOLD,
+                        NAVY_BLUE
+                );
+
+        Font subTitleFont =
+                new Font(
+                        Font.FontFamily.HELVETICA,
+                        15,
+                        Font.BOLD,
+                        BaseColor.BLACK
+                );
+
+        Font infoFont =
+                new Font(
+                        Font.FontFamily.HELVETICA,
+                        13,
+                        Font.NORMAL,
+                        BaseColor.BLACK
+                );
+
+        Paragraph hospital =
+                new Paragraph(
+                        "SHINDE HOSPITAL",
+                        hospitalFont
+                );
+
+        hospital.setAlignment(Element.ALIGN_CENTER);
+
+        Paragraph subtitle =
+                new Paragraph(
+                        "ENT & General Healthcare",
+                        subTitleFont
+                );
+
+        subtitle.setAlignment(Element.ALIGN_CENTER);
+
+        Paragraph address =
+                new Paragraph(
+                        "Mehkar, Maharashtra | Phone: +91 70580 94146",
+                        infoFont
+                );
+
+        address.setAlignment(Element.ALIGN_CENTER);
+
+        textCell.addElement(hospital);
+        textCell.addElement(subtitle);
+        textCell.addElement(address);
+
+        headerTable.addCell(logoCell);
+        headerTable.addCell(textCell);
+
+        document.add(headerTable);
+
         document.add(new Paragraph(" "));
 
+        LineSeparator line =
+                new LineSeparator();
+
+        line.setLineWidth(2f);
+
+        line.setLineColor(NAVY_BLUE);
+
+        document.add(new Chunk(line));
+
+        document.add(new Paragraph(" "));
 
         // 2. PATIENT, DOCTOR & BILLING METADATA (Two-column layout)
         PdfPTable infoTable = new PdfPTable(2);
@@ -162,9 +268,44 @@ public class InvoicePdfGenerator {
         summaryLeftCell.setVerticalAlignment(Element.ALIGN_BOTTOM);
         summaryLeftCell.setPaddingBottom(15);
         
-        Paragraph dots = new Paragraph("..................................................", valFont);
-        Paragraph cashierTitle = new Paragraph("Cashier / Receptionist", labelFont);
+//        Paragraph dots = new Paragraph("..................................................", valFont);
+//        Paragraph cashierTitle = new Paragraph("Cashier / Receptionist", labelFont);
+//        summaryLeftCell.addElement(dots);
+//        summaryLeftCell.addElement(cashierTitle);
+        // Reception Signature
+        try {
+
+            java.net.URL receptionSignUrl =
+                    InvoicePdfGenerator.class.getResource("/signature.png");
+
+            if (receptionSignUrl != null) {
+
+                Image receptionSign = Image.getInstance(receptionSignUrl);
+
+                receptionSign.scaleToFit(90, 45);   // size adjust kar sakte ho
+                receptionSign.setAlignment(Element.ALIGN_LEFT);
+
+                summaryLeftCell.addElement(receptionSign);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Reception signature not found.");
+        }
+
+// Dotted Line
+        Paragraph dots =
+                new Paragraph("..................................................", valFont);
+
+        dots.setSpacingBefore(5);
+
         summaryLeftCell.addElement(dots);
+
+// Receptionist Text
+        Paragraph cashierTitle =
+                new Paragraph("Cashier / Receptionist", labelFont);
+
+        cashierTitle.setSpacingBefore(3);
+
         summaryLeftCell.addElement(cashierTitle);
         summaryTable.addCell(summaryLeftCell);
 

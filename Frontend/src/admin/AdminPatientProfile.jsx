@@ -121,6 +121,49 @@ export default function AdminPatientProfile({ patientId, onBack }) {
     Confirmed:  { bg: '#dbeafe', text: '#2563eb', border: '#93c5fd' },
   };
 
+  const deleteReport = async (reportId) => {
+
+  if (!window.confirm("Delete this report?")) return;
+
+  try {
+
+    const res = await fetch(
+      `${API}/reports/${reportId}`,
+      {
+        method: "DELETE",
+        headers: {
+          ...getAuthHeaders()
+        }
+      }
+    );
+
+    if (res.ok) {
+
+      toast.success("Report deleted successfully");
+
+      // Reload patient history
+      const historyRes = await fetch(`${API}/patient-history/${patientId}`, {
+        headers: { ...getAuthHeaders() }
+      });
+
+      const historyData = await historyRes.json();
+
+      setHistory(historyData);
+
+    } else {
+
+      toast.error("Failed to delete report");
+
+    }
+
+  } catch (err) {
+
+    toast.error(String(err));
+
+  }
+
+};
+
   return (
     <div style={{ padding: '24px 32px', fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
 
@@ -491,7 +534,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                           {rep.description || 'Uploaded report document'}
                         </p>
                       </div>
-                      <button
+                      {/* <button
                         onClick={() => {
                           if (rep.fileData) {
                             try {
@@ -514,7 +557,76 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                         onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#0B2C56'; }}
                       >
                         <Download size={13} /> Download
-                      </button>
+                      </button> */}
+
+                      <div
+  style={{
+    marginTop: "auto",
+    display: "flex",
+    gap: 8,
+    width: "100%",
+  }}
+>
+
+  <button
+    onClick={() => {
+      if (rep.fileData) {
+        const link = document.createElement("a");
+        link.href = rep.fileData;
+        link.download = rep.reportName || "Report";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast.error("No file available.");
+      }
+    }}
+    style={{
+      flex: 1,
+      padding: "10px 0",
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      borderRadius: 10,
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#0B2C56",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      transition: "0.2s"
+    }}
+  >
+    <Download size={13} />
+    Download
+  </button>
+
+  <button
+    onClick={() => deleteReport(rep.id)}
+    style={{
+      flex: 1,
+      padding: "10px 0",
+      background: "#fef2f2",
+      border: "1px solid #fecaca",
+      borderRadius: 10,
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#dc2626",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      transition: "0.2s"
+    }}
+  >
+    🗑 Delete
+  </button>
+
+</div>
+
+                      
                     </div>
                   ))}
                 </div>
