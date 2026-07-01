@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function AdminSettings() {
   const [hospitalName, setHospitalName] = useState('Shinde ENT Hospital');
@@ -8,7 +9,7 @@ export default function AdminSettings() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    alert('Settings Saved Successfully!');
+    toast.success('Settings Saved Successfully!');
   };
 
   return (

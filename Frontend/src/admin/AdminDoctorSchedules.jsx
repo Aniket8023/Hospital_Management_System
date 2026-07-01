@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import { Users, CalendarDays, Clock3, CheckCircle2, RefreshCw, Plus, Search } from 'lucide-react';
 
@@ -141,7 +142,7 @@ export default function AdminDoctorSchedules({ doctors = [] }) {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!createDoctor || !createDate || !createStart || !createEnd) {
-      alert("Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
     const payload = {
@@ -168,10 +169,10 @@ export default function AdminDoctorSchedules({ doctors = [] }) {
         setTimeout(() => setCreateSuccess(false), 3000);
       } else {
         const text = await res.text();
-        alert("Failed: " + text);
+        toast.error("Failed: " + text);
       }
     } catch {
-      alert("Network error");
+      toast.error("Network error");
     } finally {
       setCreating(false);
     }
@@ -180,7 +181,7 @@ export default function AdminDoctorSchedules({ doctors = [] }) {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchDoctor || !searchDate) {
-      alert("Please select doctor and date");
+      toast.error("Please select doctor and date");
       return;
     }
     setSearching(true);
@@ -207,7 +208,7 @@ export default function AdminDoctorSchedules({ doctors = [] }) {
         setSlots(slotData);
       }
     } catch {
-      alert("Network error while searching");
+      toast.error("Network error while searching");
     } finally {
       setSearching(false);
       // Add to recent searches

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from "../utils/auth";
 
 export default function AdminReports({ patients = [] }) {
@@ -45,7 +46,7 @@ export default function AdminReports({ patients = [] }) {
             setPatientOptions(Array.isArray(data) ? data : []);
           }
         } catch (e) {
-          console.error(e);
+          toast.error(String(e));
         }
       };
       fetchPatients();
@@ -78,7 +79,7 @@ export default function AdminReports({ patients = [] }) {
       setDoctors(data);
 
     } catch (err) {
-      console.error(err);
+      toast.error(String(err));
     }
   };
 
@@ -100,7 +101,7 @@ export default function AdminReports({ patients = [] }) {
       setReports(data);
 
     } catch (err) {
-      console.error(err);
+      toast.error(String(err));
     }
   };
 
@@ -113,7 +114,7 @@ export default function AdminReports({ patients = [] }) {
       !reportType ||
       !file
     ) {
-      alert("Fill all fields");
+      toast.error("Fill all fields");
       return;
     }
 
@@ -160,7 +161,7 @@ export default function AdminReports({ patients = [] }) {
 
       if (res.ok) {
 
-        alert(
+        toast.success(
           "Report Uploaded Successfully"
         );
 
@@ -172,14 +173,14 @@ export default function AdminReports({ patients = [] }) {
 
       } else {
 
-        alert(
+        toast.error(
           "Upload Failed"
         );
       }
 
     } catch (err) {
 
-      console.error(err);
+      toast.error(String(err));
     }
   };
 
@@ -225,7 +226,7 @@ export default function AdminReports({ patients = [] }) {
 
     } catch (err) {
 
-      console.error(err);
+      toast.error(String(err));
     }
   };
 
@@ -248,7 +249,7 @@ export default function AdminReports({ patients = [] }) {
 
       if (res.ok) {
 
-        alert("Report Deleted");
+        toast.error("Report Deleted");
 
         loadReports(patientId);
 
@@ -256,7 +257,7 @@ export default function AdminReports({ patients = [] }) {
 
     } catch (err) {
 
-      console.error(err);
+      toast.error(String(err));
     }
   };
 

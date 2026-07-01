@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 
 export default function AdminSuppliers({}) {
@@ -21,7 +22,7 @@ export default function AdminSuppliers({}) {
       const res = await fetch(`${API}/suppliers`, { headers: { ...getAuthHeaders() } });
       if (res.ok) setSuppliers(await res.json());
     } catch (e) {
-      console.error('Failed to load suppliers', e);
+      toast.error(String('Failed to load suppliers'));
     }
   };
 
@@ -75,7 +76,7 @@ export default function AdminSuppliers({}) {
         setFormError('Failed to save supplier');
       }
     } catch (e) {
-      console.error('Supplier error', e);
+      toast.error(String('Supplier error'));
       setFormError('Network error');
     }
   };
@@ -86,7 +87,7 @@ export default function AdminSuppliers({}) {
       const res = await fetch(`${API}/suppliers/${id}`, { method: 'DELETE', headers: { ...getAuthHeaders() } });
       if (res.ok) await fetchSuppliers();
     } catch (e) {
-      console.error('Delete error', e);
+      toast.error(String('Delete error'));
     }
   };
 

@@ -30,9 +30,6 @@ public class Appointment {
     private Patient patient;
 
     @ManyToOne
-    @JsonIgnoreProperties({
-            "user"
-    })
     private Doctor doctor;
     private LocalDate appointmentDate;
 

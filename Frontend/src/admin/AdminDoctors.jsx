@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import {
   Stethoscope, Mail, Phone, Building2, Calendar, Search,
@@ -316,7 +317,7 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
         await fetchSchedule(doctorId, scheduleDate);
         setScheduleTab('view');
       }
-    } catch (e) { console.error('Create schedule failed', e); }
+    } catch (e) { toast.error(String('Create schedule failed')); }
   };
 
   const fetchSchedule = async (doctorId, date) => {
@@ -324,7 +325,7 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
       const res = await fetch(`${API}/doctor-schedule?doctorId=${doctorId}&date=${date}`, { headers: { ...getAuthHeaders() } });
       const data = await res.json();
       setScheduleList(data);
-    } catch (e) { console.error('Fetch schedule failed', e); }
+    } catch (e) { toast.error(String('Fetch schedule failed')); }
   };
 
   const generateSlots = async () => {
@@ -333,7 +334,7 @@ export default function AdminDoctors({ doctors, addDoctor, editDoctor, deleteDoc
       const res = await fetch(`${API}/doctor-schedule/slots?doctorId=${doctorId}&date=${scheduleDate}`, { headers: { ...getAuthHeaders() } });
       const data = await res.json();
       setAvailableSlots(data);
-    } catch (e) { console.error('Generate slots failed', e); }
+    } catch (e) { toast.error(String('Generate slots failed')); }
   };
 
   // ── Unique departments for filter dropdown

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
+import toast from 'react-hot-toast';
 
 // Data imports
 import {
@@ -117,7 +118,7 @@ function AdminPortal({
     fetch('http://localhost:8080/dashboard', { headers: { ...getAuthHeaders() } })
       .then(res => res.json())
       .then(data => setDashboardData(data))
-      .catch(() => console.error('Failed to load dashboard data'));
+      .catch(() => toast.error(String('Failed to load dashboard data')));
   }, []);
 
   // Determine active admin tab from hash
@@ -155,9 +156,9 @@ function AdminPortal({
         <div className="px-4 py-4 border-b border-gray-100">
           <div
             className="cursor-pointer flex items-center"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/admin')}
           >
-            <Logo showText={true} imgClassName="h-10" />
+            <Logo showText={true} imgClassName="h-20" />
           </div>
         </div>
 
@@ -438,7 +439,7 @@ function App() {
       .then(data => {
         if (Array.isArray(data)) setDoctors(data);
       })
-      .catch(e => console.error('Failed to load doctors', e));
+      .catch(e => toast.error(String('Failed to load doctors')));
       
     // Fetch patients
     fetch('http://localhost:8080/patients', { headers: { ...getAuthHeaders() } })
@@ -449,7 +450,7 @@ function App() {
       .then(data => {
         if (Array.isArray(data)) setPatients(data);
       })
-      .catch(e => console.error('Failed to load patients', e));
+      .catch(e => toast.error(String('Failed to load patients')));
   }, []);
 
   const [reports, setReports] = useState(() => {
@@ -509,7 +510,8 @@ function App() {
       password: "doctor123",
       specialization: p.specialty,
       qualification: p.department,
-      experience: 1
+      experience: 1,
+      phone: p.phone || ''
     };
 
     try {
@@ -529,12 +531,12 @@ function App() {
       if (res.ok) {
         const newDoc = JSON.parse(text);
         setDoctors(prev => [...prev, newDoc]);
-        alert("Doctor Added Successfully");
+        toast.success("Doctor Added Successfully");
       } else {
-        alert("Doctor Add Failed");
+        toast.error("Doctor Add Failed");
       }
     } catch (error) {
-      console.error(error);
+      toast.error(String(error));
     }
   }, []);
 
@@ -549,10 +551,10 @@ function App() {
         const updated = await res.json();
         setDoctors(prev => prev.map(d => d.id === id ? updated : d));
       } else {
-        console.error('Failed to edit doctor');
+        toast.error(String('Failed to edit doctor'));
       }
     } catch (e) {
-      console.error(e);
+      toast.error(String(e));
     }
   }, []);
 
@@ -565,10 +567,10 @@ function App() {
       if (res.ok) {
         setDoctors(prev => prev.filter(d => d.id !== id));
       } else {
-        console.error('Failed to delete doctor');
+        toast.error(String('Failed to delete doctor'));
       }
     } catch (e) {
-      console.error(e);
+      toast.error(String(e));
     }
   }, []);
 
@@ -596,7 +598,7 @@ function App() {
         setPatients(prev => [...prev, newPatient]);
       }
     } catch (e) {
-      console.error(e);
+      toast.error(String(e));
     }
   }, []);
 
@@ -611,9 +613,9 @@ function App() {
         const updated = await res.json();
         setPatients(prev => prev.map(pt => pt.id === id ? updated : pt));
       } else {
-        console.error('Failed to edit patient');
+        toast.error(String('Failed to edit patient'));
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   }, []);
 
   const deletePatient = useCallback(async (id) => {
@@ -625,9 +627,9 @@ function App() {
       if (res.ok) {
         setPatients(prev => prev.filter(pt => pt.id !== id));
       } else {
-        console.error('Failed to delete patient');
+        toast.error(String('Failed to delete patient'));
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { toast.error(String(e)); }
   }, []);
 
   // ---------- Prescriptions ----------

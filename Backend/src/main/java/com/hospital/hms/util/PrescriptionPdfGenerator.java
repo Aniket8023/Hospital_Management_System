@@ -28,27 +28,56 @@ public class PrescriptionPdfGenerator {
         PdfWriter writer = PdfWriter.getInstance(document, out);
         document.open();
 
-        // 1. HEADER SECTION — full landscape logo centered
-        Image logoImg = null;
+        // 1. HEADER SECTION — Logo left, text centered
+        PdfPTable headerTable = new PdfPTable(3);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{1.5f, 4f, 1.5f});
+        
+        PdfPCell logoCell = new PdfPCell();
+        logoCell.setBorder(PdfPCell.NO_BORDER);
+        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         try {
             java.net.URL logoUrl = PrescriptionPdfGenerator.class.getResource("/logo.png");
             if (logoUrl != null) {
-                logoImg = Image.getInstance(logoUrl);
-                // 1024x682 aspect ratio ~1.5 — scaleToFit(250,85) → height-limited: 127×85 pts
-                logoImg.scaleToFit(250, 85);
+                Image logoImg = Image.getInstance(logoUrl);
+                logoImg.scaleToFit(80, 80);
                 logoImg.setAlignment(Element.ALIGN_CENTER);
-                document.add(logoImg);
+                logoCell.addElement(logoImg);
             }
         } catch (Exception e) {
             System.err.println("Could not load logo: " + e.getMessage());
         }
-
-        if (logoImg == null) {
-            Font fallbackFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, NAVY_BLUE);
-            Paragraph fallback = new Paragraph("SHINDE ENT HOSPITAL", fallbackFont);
-            fallback.setAlignment(Element.ALIGN_CENTER);
-            document.add(fallback);
-        }
+        headerTable.addCell(logoCell);
+        
+        PdfPCell textCell = new PdfPCell();
+        textCell.setBorder(PdfPCell.NO_BORDER);
+        textCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        
+        Font hFont = new Font(Font.FontFamily.TIMES_ROMAN, 24, Font.BOLD, NAVY_BLUE);
+        Paragraph p1 = new Paragraph("SHINDE HOSPITAL", hFont);
+        p1.setAlignment(Element.ALIGN_CENTER);
+        textCell.addElement(p1);
+        
+        Font subFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK);
+        Paragraph p2 = new Paragraph("ENT & General Healthcare", subFont);
+        p2.setAlignment(Element.ALIGN_CENTER);
+        p2.setSpacingBefore(2);
+        textCell.addElement(p2);
+        
+        Font addrFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+        Paragraph p3 = new Paragraph("Pune, Maharashtra | Phone: +91 98765 43210", addrFont);
+        p3.setAlignment(Element.ALIGN_CENTER);
+        p3.setSpacingBefore(2);
+        textCell.addElement(p3);
+        
+        headerTable.addCell(textCell);
+        
+        PdfPCell emptyCell = new PdfPCell();
+        emptyCell.setBorder(PdfPCell.NO_BORDER);
+        headerTable.addCell(emptyCell);
+        
+        document.add(headerTable);
+        document.add(new Paragraph(" "));
 
         // Blue Divider Line
         LineSeparator ls = new LineSeparator(1.5f, 100, NAVY_BLUE, Element.ALIGN_CENTER, -5);
@@ -120,8 +149,12 @@ public class PrescriptionPdfGenerator {
         PdfPCell rightCell = new PdfPCell();
         rightCell.setBorder(PdfPCell.NO_BORDER);
         rightCell.setPaddingLeft(10);
+        
+        Paragraph dEmpty = new Paragraph(" ", labelFont);
+        rightCell.addElement(dEmpty);
 
         Paragraph dName = new Paragraph();
+        dName.setSpacingBefore(4);
         dName.add(new Chunk("Doctor             :  ", labelFont));
         dName.add(new Chunk("Dr. " + prescription.getDoctor().getUser().getName(), valFont));
         rightCell.addElement(dName);
@@ -160,7 +193,7 @@ public class PrescriptionPdfGenerator {
         Font tblHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, NAVY_BLUE);
         addTableHeaderCell(medTable, "Sr. No.", tblHeaderFont);
         addTableHeaderCell(medTable, "Medicine Name", tblHeaderFont);
-        addTableHeaderCell(medTable, "Dosage (Morning/Afternoon/Night)", tblHeaderFont);
+        addTableHeaderCell(medTable, "Dosage", tblHeaderFont);
         addTableHeaderCell(medTable, "Duration", tblHeaderFont);
 
         // Table Body

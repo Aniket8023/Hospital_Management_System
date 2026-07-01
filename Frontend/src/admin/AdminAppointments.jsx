@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import { 
   Calendar, 
@@ -77,7 +78,7 @@ export default function AdminAppointments() {
         setAppointments(await res.json());
       }
     } catch (e) {
-      console.error('Failed to fetch appointments', e);
+      toast.error(String('Failed to fetch appointments'));
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,7 @@ export default function AdminAppointments() {
       const res = await fetch(`${API}/patients`, { headers: getAuthHeaders() });
       if (res.ok) setPatients(await res.json());
     } catch (e) {
-      console.error('Failed to load patients', e);
+      toast.error(String('Failed to load patients'));
     }
   };
 
@@ -99,7 +100,7 @@ export default function AdminAppointments() {
       const res = await fetch(`${API}/doctor`, { headers: getAuthHeaders() });
       if (res.ok) setDoctors(await res.json());
     } catch (e) {
-      console.error('Failed to load doctors', e);
+      toast.error(String('Failed to load doctors'));
     }
   };
 
@@ -119,7 +120,7 @@ export default function AdminAppointments() {
         setAppointments(await res.json());
       }
     } catch (e) {
-      console.error('Failed to fetch today\'s appointments', e);
+      toast.error(String('Failed to fetch today\'s appointments'));
     } finally {
       setLoading(false);
     }
@@ -133,7 +134,7 @@ export default function AdminAppointments() {
         setAppointments(await res.json());
       }
     } catch (e) {
-      console.error('Failed to fetch pending appointments', e);
+      toast.error(String('Failed to fetch pending appointments'));
     } finally {
       setLoading(false);
     }
@@ -165,7 +166,7 @@ export default function AdminAppointments() {
       }
       setAppointments(data);
     } catch (e) {
-      console.error('Filtering failed', e);
+      toast.error(String('Filtering failed'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,7 @@ export default function AdminAppointments() {
         }
       }
     } catch (e) {
-      console.error('Failed to update status', e);
+      toast.error(String('Failed to update status'));
     }
   };
 
@@ -206,7 +207,7 @@ export default function AdminAppointments() {
         setDrawerData(await res.json());
       }
     } catch (e) {
-      console.error('Failed to fetch appointment detail', e);
+      toast.error(String('Failed to fetch appointment detail'));
     } finally {
       setLoadingDrawer(false);
     }
@@ -231,7 +232,7 @@ export default function AdminAppointments() {
         if (drawerOpen && drawerApptId === id) setDrawerOpen(false);
       }
     } catch (e) {
-      console.error('Failed to delete appointment', e);
+      toast.error(String('Failed to delete appointment'));
     }
   };
 
@@ -315,7 +316,7 @@ export default function AdminAppointments() {
         setFormError(errText || 'An error occurred while saving.');
       }
     } catch (e) {
-      console.error(e);
+      toast.error(String(e));
       setFormError('Network error');
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 export default function AdminDashboard({ appointments = [], doctors = [], setAdminTab }) {
   const API = 'http://localhost:8080';
@@ -40,7 +41,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         setBillsData(Array.isArray(bills) ? bills : []);
         setLoading(false);
       } catch (e) {
-        console.error('Failed to load dashboard data', e);
+        toast.error(String('Failed to load dashboard data'));
         setError(e);
         setLoading(false);
       }

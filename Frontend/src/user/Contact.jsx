@@ -9,6 +9,13 @@ export default function Contact() {
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCoords = () => {
+    navigator.clipboard.writeText("20°09'03.8\"N 76°34'36.6\"E");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -93,51 +100,83 @@ export default function Contact() {
 
         </div>
 
-        {/* Satara Map Mockup */}
-        <div className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-xs">
-          <div className="bg-gray-100 p-3 flex justify-between items-center text-xs font-semibold text-gray-500 border-b border-gray-250">
-            <span className="flex items-center gap-1.5">
-              <span>🗺️</span>
-              <span>Hospital Location Map (Satara, Maharashtra)</span>
+        {/* Map Location Section */}
+        <div className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg">
+          <div className="bg-gray-50/80 backdrop-blur-xs p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs font-semibold text-gray-600 border-b border-gray-200">
+            <span className="flex items-center gap-2">
+              <span className="text-lg">🗺️</span>
+              <div className="text-left">
+                <h4 className="font-extrabold text-[#0B2C56] text-sm">Interactive Hospital Location Map</h4>
+                <p className="text-gray-400 font-normal text-[11px] mt-0.5">Coordinates: 20°09'03.8"N 76°34'36.6"E</p>
+              </div>
             </span>
-            <span className="text-blue-600">Shinde Hospital, Shivajinagar</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleCopyCoords}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-lg text-[11px] font-bold shadow-2xs hover:shadow-xs transition-all cursor-pointer min-w-[130px]"
+              >
+                <span>{copied ? '✅ Copied' : '📋 Copy Coordinates'}</span>
+              </button>
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=20.151056,76.576833"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#0B2C56] hover:bg-[#154175] text-white rounded-lg text-[11px] font-bold shadow-2xs hover:shadow-xs transition-all cursor-pointer text-center"
+              >
+                <span>Open in Google Maps ↗</span>
+              </a>
+            </div>
           </div>
 
-          {/* Interactive lookalike Map */}
-          <div className="relative h-80 bg-[#E8ECE9] overflow-hidden">
-            {/* Visual elements representing map streets & locations */}
-            <div className="absolute top-28 left-0 right-0 h-4 bg-white transform -rotate-6"></div> {/* Road */}
-            <div className="absolute top-0 bottom-0 left-1/3 w-4 bg-white transform rotate-12"></div> {/* Road */}
-            <div className="absolute top-1/2 left-0 right-0 h-3 bg-white transform rotate-3"></div> {/* Road */}
-
-            {/* Landmarks */}
-            <div className="absolute top-8 left-1/4 bg-blue-50/90 text-blue-900 border border-blue-200 px-3 py-1 rounded-md text-[10px] font-bold shadow-xs">
-              🏫 Shivaji University
-            </div>
-            <div className="absolute top-12 right-1/4 bg-sky-50/90 text-sky-900 border border-sky-200 px-3 py-1 rounded-md text-[10px] font-bold shadow-xs">
-              🛍️ City Center Mall
-            </div>
-            <div className="absolute bottom-20 left-10 bg-emerald-50/90 text-emerald-900 border border-emerald-200 px-3 py-1 rounded-md text-[10px] font-bold shadow-xs">
-              🏞️ Venna Lake
-            </div>
-            <div className="absolute bottom-16 right-16 bg-amber-50/90 text-amber-900 border border-amber-200 px-3 py-1 rounded-md text-[10px] font-bold shadow-xs">
-              🚌 Satara Bus Stand
-            </div>
-
-            {/* Hospital Pin */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 animate-bounce">
-              <div className="bg-rose-500 text-white p-2 rounded-full shadow-lg border border-white flex items-center justify-center">
-                🏥
+          <div className="grid grid-cols-1 lg:grid-cols-4 h-[420px] lg:h-[480px]">
+            {/* Location Details panel */}
+            <div className="lg:col-span-1 bg-[#f8fafc] border-b lg:border-b-0 lg:border-r border-gray-150 p-6 flex flex-col justify-between text-left">
+              <div className="space-y-5">
+                <span className="text-xs uppercase font-extrabold tracking-widest text-[#2B9CB5] bg-blue-50 px-2.5 py-1 rounded-full">
+                  GPS Location
+                </span>
+                <div className="space-y-4 mt-2">
+                  <div>
+                    <h5 className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Hospital Latitude</h5>
+                    <p className="text-sm font-semibold text-[#0B2C56] mt-0.5">20.151056° N</p>
+                  </div>
+                  <div>
+                    <h5 className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Hospital Longitude</h5>
+                    <p className="text-sm font-semibold text-[#0B2C56] mt-0.5">76.576833° E</p>
+                  </div>
+                  <div>
+                    <h5 className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Address Coordinates</h5>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      20°09'03.8"N 76°34'36.6"E
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="bg-white/95 border border-rose-300 text-gray-800 text-[10px] font-bold px-2 py-1 rounded-md shadow-md mt-1 whitespace-nowrap">
-                Shinde Hospital
+
+              <div className="pt-4 border-t border-gray-200/60 mt-4 space-y-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="text-rose-500">📍</span>
+                  <span>Easy Navigable Route</span>
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
+                  Click the navigation buttons above or copy coordinates into your preferred maps application to begin your route directly to Shinde Hospital.
+                </p>
               </div>
             </div>
 
-            {/* Zoom Controls */}
-            <div className="absolute bottom-4 right-4 flex flex-col gap-1 bg-white border border-gray-300 rounded shadow-sm overflow-hidden text-sm font-bold">
-              <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 border-b border-gray-200 cursor-pointer text-gray-600">+</button>
-              <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 cursor-pointer text-gray-600">-</button>
+            {/* Interactive Map IFrame */}
+            <div className="lg:col-span-3 w-full h-full relative bg-[#e5e7eb]">
+              <iframe
+                src="https://maps.google.com/maps?q=20.151056,76.576833&z=16&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Shinde Hospital Map Location"
+                className="w-full h-full absolute inset-0 filter brightness-95 hover:brightness-100 transition-all duration-300"
+              ></iframe>
             </div>
           </div>
         </div>

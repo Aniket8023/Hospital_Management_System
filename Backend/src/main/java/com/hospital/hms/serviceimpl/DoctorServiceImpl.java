@@ -45,6 +45,8 @@ public class DoctorServiceImpl
                 dto.getQualification());
         doctor.setExperience(
                 dto.getExperience());
+        doctor.setPhone(
+                dto.getPhone());
 
         return doctorRepository.save(doctor);
     }
@@ -99,6 +101,9 @@ public class DoctorServiceImpl
 
         doctor.setExperience(
                 dto.getExperience());
+
+        doctor.setPhone(
+                dto.getPhone());
 
         return doctorRepository.save(
                 doctor);
