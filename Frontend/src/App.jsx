@@ -164,7 +164,10 @@ function AdminPortal({
   className="cursor-pointer flex items-center"
   onClick={() => navigate('/admin')}
 >
-    <Logo showText={true} imgClassName="h-20" />
+    <Logo
+  showText={true}
+  imgClassName="h-10 max-w-[140px]"
+/>
 </div>
         </div>
 

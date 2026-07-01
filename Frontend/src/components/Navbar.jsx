@@ -14,12 +14,12 @@ export default function Navbar({ currentTab, setCurrentTab }) {
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
             {/* Click logo to go home */}
             <div className="cursor-pointer" onClick={() => setCurrentTab('home')}>
-              <Logo imgClassName="h-40" />
+              <Logo imgClassName="h-15" />
             </div>
           </div>
 
