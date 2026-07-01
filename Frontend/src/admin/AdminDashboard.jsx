@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
+import AdminPatientProfile from './AdminPatientProfile';
 export default function AdminDashboard({ appointments = [], doctors = [], setAdminTab }) {
   const API = 'http://localhost:8080';
   
@@ -11,6 +12,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   const [billsData, setBillsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewingPatientId, setViewingPatientId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,11 +72,30 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   }));
 
   const sortedPatients = [...patientsData].sort((a, b) => (b.id || 0) - (a.id || 0));
+  // const recentPatients = sortedPatients.slice(0, 5).map(pat => ({
+  //   name: pat.fullName || '',
+  //   date: pat.createdAt ? new Date(pat.createdAt).toLocaleDateString() : '',
+  //   initial: pat.fullName ? pat.fullName.split(' ').map(n => n[0]).join('') : ''
+  // }));
   const recentPatients = sortedPatients.slice(0, 5).map(pat => ({
+    id: pat.id,
     name: pat.fullName || '',
-    date: pat.createdAt ? new Date(pat.createdAt).toLocaleDateString() : '',
-    initial: pat.fullName ? pat.fullName.split(' ').map(n => n[0]).join('') : ''
-  }));
+    date: pat.createdAt
+        ? new Date(pat.createdAt).toLocaleDateString()
+        : '',
+    initial: pat.fullName
+        ? pat.fullName.split(' ').map(n => n[0]).join('')
+        : ''
+}));
+
+  if (viewingPatientId) {
+    return (
+        <AdminPatientProfile
+            patientId={viewingPatientId}
+            onBack={() => setViewingPatientId(null)}
+        />
+    );
+}
 
   return (
     <div className="p-6 md:p-8 space-y-8 font-sans text-gray-800 text-left bg-gray-50/30 min-h-screen">
@@ -196,7 +217,13 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
                     {patient.initial}
                   </div>
                   <div className="flex-1 text-left">
-                    <h4 className="font-extrabold text-[#0B2C56] text-xs leading-none">{patient.name}</h4>
+                    {/* <h4 className="font-extrabold text-[#0B2C56] text-xs leading-none">{patient.name}</h4> */}
+                    <h4
+                      onClick={() => setViewingPatientId(patient.id)}
+                      className="font-extrabold text-[#0B2C56] text-xs leading-none cursor-pointer hover:text-blue-700 hover:underline"
+                  >
+                      {patient.name}
+                  </h4>
                   </div>
                   <span className="text-[10px] font-bold text-gray-400">{patient.date}</span>
                 </div>

@@ -162,7 +162,13 @@ public class PrescriptionPdfGenerator {
         Paragraph dSpec = new Paragraph();
         dSpec.setSpacingBefore(4);
         dSpec.add(new Chunk("Specialization  :  ", labelFont));
-        dSpec.add(new Chunk(prescription.getDoctor().getSpecialization(), valFont));
+        //dSpec.add(new Chunk(prescription.getDoctor().getSpecialization(), valFont));
+        String specialization =
+                prescription.getDoctor().getSpecialization();
+
+        dSpec.add(new Chunk(
+                specialization != null ? specialization : "N/A",
+                valFont));
         rightCell.addElement(dSpec);
         infoTable.addCell(rightCell);
 
@@ -267,7 +273,13 @@ public class PrescriptionPdfGenerator {
         sigName.setSpacingBefore(4);
         sigCell.addElement(sigName);
 
-        Paragraph sigSpec = new Paragraph(prescription.getDoctor().getSpecialization(), sigRegFont);
+       // Paragraph sigSpec = new Paragraph(prescription.getDoctor().getSpecialization(), sigRegFont);
+        Paragraph sigSpec =
+                new Paragraph(
+                        prescription.getDoctor().getSpecialization() != null
+                                ? prescription.getDoctor().getSpecialization()
+                                : "N/A",
+                        sigRegFont);
         sigSpec.setAlignment(Element.ALIGN_RIGHT);
         sigCell.addElement(sigSpec);
 

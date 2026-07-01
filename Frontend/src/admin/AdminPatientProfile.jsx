@@ -67,7 +67,34 @@ export default function AdminPatientProfile({ patientId, onBack }) {
   const pastApts = sortedApts.filter(a => new Date(a.appointmentDate) < today);
   const futureApts = sortedApts.filter(a => new Date(a.appointmentDate) >= today);
 
-  const lastVisit = pastApts.length > 0 ? pastApts[0].appointmentDate : null;
+  // const lastVisit = pastApts.length > 0 ? pastApts[0].appointmentDate : null;
+  const appointmentLastDate =
+  pastApts.length > 0
+    ? new Date(pastApts[0].appointmentDate)
+    : null;
+
+    const prescriptionLastDate =
+      prescriptions.length > 0
+        ? new Date(
+            [...prescriptions].sort(
+              (a, b) =>
+                new Date(b.prescriptionDate) -
+                new Date(a.prescriptionDate)
+            )[0].prescriptionDate
+          )
+        : null;
+
+    let lastVisit = null;
+
+    if (appointmentLastDate && prescriptionLastDate) {
+      lastVisit =
+        appointmentLastDate > prescriptionLastDate
+          ? appointmentLastDate
+          : prescriptionLastDate;
+    } else {
+      lastVisit =
+        appointmentLastDate || prescriptionLastDate;
+    }
   const nextAppointment = futureApts.length > 0 ? futureApts[futureApts.length - 1].appointmentDate : null;
 
   const fmtDate = (d) => {
@@ -78,6 +105,9 @@ export default function AdminPatientProfile({ patientId, onBack }) {
 
   // Last prescription date
   const sortedPx = [...prescriptions].sort((a, b) => new Date(b.prescriptionDate) - new Date(a.prescriptionDate));
+  const prescriptionHistory = [...prescriptions].sort(
+    (a, b) => new Date(b.prescriptionDate) - new Date(a.prescriptionDate)
+  );
   const lastPx = sortedPx.length > 0 ? sortedPx[0].prescriptionDate : null;
 
   // Last report date
@@ -306,14 +336,37 @@ export default function AdminPatientProfile({ patientId, onBack }) {
               {prescriptions.length === 0 ? (
                 <EmptyState icon={<FileText size={36} />} message="No prescriptions found for this patient." />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {prescriptions.map((px, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => { window.location.hash = `/admin/prescriptions/details/${px.id}`; }}
-                      style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.08)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+
+<div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+ 
+                 {prescriptionHistory.map((px, idx) => (
+                    // <div key={idx} style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div
+                    key={idx}
+                    onClick={() =>
+                        window.location.hash =
+                        `/admin/prescriptions/details/${px.id}`
+                    }
+                    style={{
+                        background:"#fff",
+                        borderRadius:16,
+                        border:"1px solid #e2e8f0",
+                        overflow:"hidden",
+                        cursor:"pointer",
+                        transition:"all .25s"
+                    }}
+                    onMouseEnter={(e)=>{
+                        e.currentTarget.style.transform="translateY(-4px)";
+                        e.currentTarget.style.boxShadow="0 14px 30px rgba(11,44,86,.12)";
+                        e.currentTarget.style.borderColor="#bfdbfe";
+                    }}
+
+                    onMouseLeave={(e)=>{
+                        e.currentTarget.style.transform="translateY(0)";
+                        e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,.04)";
+                        e.currentTarget.style.borderColor="#e2e8f0";
+                    }}
+
                     >
                       <div style={{ height: 3, background: 'linear-gradient(90deg, #16a34a, #4ade80)' }}></div>
                       <div style={{ padding: '18px 22px' }}>
@@ -326,6 +379,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                             </p>
                           </div>
                         </div>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9' }}>
                           {px.doctor && px.doctor.user && (
                             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -344,6 +398,68 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                             </div>
                           )}
                         </div>
+
+                     
+
+                {/* <div>
+
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: "#94a3b8",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: ".06em",
+                    }}
+                  >
+                    Doctor
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "3px 0 0",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      color: "#0B2C56",
+                    }}
+                  >
+                    {px.doctor?.user?.name || "Doctor"}
+                  </p>
+
+                  {px.diagnosis && (
+                    <p
+                      style={{
+                        marginTop: 6,
+                        fontSize: 13,
+                        color: "#64748b",
+                      }}
+                    >
+                      {px.diagnosis}
+                    </p>
+                  )}
+
+                </div>
+
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    background: "#eef4ff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#0B2C56",
+                    fontSize: 20,
+                    fontWeight: 700,
+                  }}
+                >
+                  →
+                </div>
+
+              </div> */}
+
                       </div>
                     </div>
                   ))}
