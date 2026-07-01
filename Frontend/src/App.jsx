@@ -155,12 +155,21 @@ function AdminPortal({
         
         {/* Sidebar Brand Logo */}
         <div className="px-4 py-4 border-b border-gray-100">
-          <div
+          {/* <div
             className="cursor-pointer flex items-center"
-            onClick={() => navigate('/admin')}
+            onClick={() => setAdminTab('dashboard')}
           >
             <Logo showText={true} imgClassName="h-20" />
-          </div>
+          </div> */}
+          <div
+  className="cursor-pointer flex items-center"
+  onClick={() => navigate('/admin')}
+>
+    <Logo
+  showText={true}
+  imgClassName="h-10 max-w-[140px]"
+/>
+</div>
         </div>
 
         {/* Navigation Items */}
@@ -317,7 +326,10 @@ function DoctorPortal({ doctors, appointments, resolveAppointment, loggedInDocto
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-[#0B2C56] text-white shadow-md border-b border-[#12396b] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+         <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate('/doctor')}
+          >
             <div className="bg-white px-3 py-1 rounded-xl shadow-sm">
               <Logo showText={true} imgClassName="h-10" />
             </div>

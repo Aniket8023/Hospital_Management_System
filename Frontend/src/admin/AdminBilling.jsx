@@ -199,19 +199,36 @@ export default function AdminBilling({ patients = [], hash }) {
 
   // Save bill
   const handleSave = async () => {
-    if (!selectedPatientId) { toast.error('Please select a patient'); return; }
-    if (!selectedAppointmentId) { toast.error('Please select an appointment'); return; }
-    if (billItems.some(it => !it.itemName)) { toast.error('Please fill in all item names'); return; }
+// <<<<<<< Updated upstream
+//     if (!selectedPatientId) { toast.error('Please select a patient'); return; }
+//     if (!selectedAppointmentId) { toast.error('Please select an appointment'); return; }
+//     if (billItems.some(it => !it.itemName)) { toast.error('Please fill in all item names'); return; }
+// =======
+if (!selectedPatientId) {
+    toast.error('Please select a patient');
+    return;
+}
+
+if (billItems.some(it => !it.itemName)) {
+    toast.error('Please fill in all item names');
+    return;
+}
+    if (!selectedPatientId) { alert('Please select a patient'); return; }
+    //if (!selectedAppointmentId) { alert('Please select an appointment'); return; }
+    if (billItems.some(it => !it.itemName)) { alert('Please fill in all item names'); return; }
+//>>>>>>> Stashed changes
 
     const payload = {
-      patientId: Number(selectedPatientId),
-      appointmentId: Number(selectedAppointmentId),
-      items: billItems.map(item => ({
+    patientId: Number(selectedPatientId),
+    appointmentId: selectedAppointmentId
+        ? Number(selectedAppointmentId)
+        : null,
+    items: billItems.map(item => ({
         itemName: item.itemName,
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice)
-      }))
-    };
+    }))
+};
 
     setSaving(true);
     try {
@@ -556,8 +573,11 @@ export default function AdminBilling({ patients = [], hash }) {
                 </button>
               </div>
             </div>
+
+            
             
             <div className="flex-1 bg-[#f8fafc] p-4 flex items-center justify-center min-h-[600px] relative">
+              
               {pdfUrl ? (
                 <iframe
                   id="pdf-preview-iframe"
@@ -571,6 +591,8 @@ export default function AdminBilling({ patients = [], hash }) {
                   <span>Loading PDF Preview...</span>
                 </div>
               )}
+
+              
             </div>
           </div>
         </div>
@@ -670,7 +692,10 @@ export default function AdminBilling({ patients = [], hash }) {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Appointment *</label>
+              {/* <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Appointment *</label> */}
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                Appointment (Optional)
+            </label>
               <select
                 value={selectedAppointmentId}
                 onChange={e => setSelectedAppointmentId(e.target.value)}

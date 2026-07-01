@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { getAuthHeaders } from '../utils/auth';
 import { showLocalStorageErrors } from '../utils/errors';
+import AdminPatientProfile from './AdminPatientProfile';
 export default function AdminDashboard({ appointments = [], doctors = [], setAdminTab }) {
   const API = 'http://localhost:8080';
-  
+
 
   const [appointmentsData, setAppointmentsData] = useState([]);
   const [doctorsData, setDoctorsData] = useState([]);
@@ -12,6 +13,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   const [billsData, setBillsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewingPatientId, setViewingPatientId] = useState(null);
 
   useEffect(() => {
     showLocalStorageErrors();
@@ -23,7 +25,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
           fetch(`${API}/patients`, { headers: { ...getAuthHeaders() } }),
           fetch(`${API}/bills`, { headers: { ...getAuthHeaders() } })
         ]);
-        
+
         if (!apptsRes.ok) throw new Error(`HTTP ${apptsRes.status}`);
         if (!docsRes.ok) throw new Error(`HTTP ${docsRes.status}`);
         if (!patsRes.ok) throw new Error(`HTTP ${patsRes.status}`);
@@ -31,12 +33,12 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
         if (!billsRes.ok) throw new Error(`HTTP ${billsRes.status}`);
 
         const [appts, docs, pats, bills] = await Promise.all([
-          apptsRes.json(), 
-          docsRes.json(), 
+          apptsRes.json(),
+          docsRes.json(),
           patsRes.json(),
           billsRes.json()
         ]);
-        
+
         setAppointmentsData(appts);
         setDoctorsData(docs);
         setPatientsData(pats);
@@ -72,15 +74,34 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
   }));
 
   const sortedPatients = [...patientsData].sort((a, b) => (b.id || 0) - (a.id || 0));
+  // const recentPatients = sortedPatients.slice(0, 5).map(pat => ({
+  //   name: pat.fullName || '',
+  //   date: pat.createdAt ? new Date(pat.createdAt).toLocaleDateString() : '',
+  //   initial: pat.fullName ? pat.fullName.split(' ').map(n => n[0]).join('') : ''
+  // }));
   const recentPatients = sortedPatients.slice(0, 5).map(pat => ({
+    id: pat.id,
     name: pat.fullName || '',
-    date: pat.createdAt ? new Date(pat.createdAt).toLocaleDateString() : '',
-    initial: pat.fullName ? pat.fullName.split(' ').map(n => n[0]).join('') : ''
+    date: pat.createdAt
+      ? new Date(pat.createdAt).toLocaleDateString()
+      : '',
+    initial: pat.fullName
+      ? pat.fullName.split(' ').map(n => n[0]).join('')
+      : ''
   }));
+
+  if (viewingPatientId) {
+    return (
+      <AdminPatientProfile
+        patientId={viewingPatientId}
+        onBack={() => setViewingPatientId(null)}
+      />
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 space-y-8 font-sans text-gray-800 text-left bg-gray-50/30 min-h-screen">
-      
+
       {/* Page Title */}
       <div className="border-b border-gray-100 pb-4">
         <h1 className="text-2xl font-extrabold text-[#0B2C56] tracking-tight">Dashboard</h1>
@@ -89,7 +110,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
 
       {/* KPI Stats Row (Panel 3 top cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         {/* Today's Appointments */}
         <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div className="space-y-1">
@@ -130,7 +151,7 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
 
       {/* Grid: Today's Appointments and Recent Patients */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+
         {/* Left: Today's Appointments Table */}
         <div className="lg:col-span-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
@@ -157,11 +178,10 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
                       <td className="py-3 font-extrabold text-[#0B2C56]">{appt.name}</td>
                       <td className="py-3 font-mono font-medium text-gray-600">{appt.mobile}</td>
                       <td className="py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border inline-block ${
-                          appt.status === 'Confirmed' 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border inline-block ${appt.status === 'Confirmed'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-amber-50 text-amber-700 border-amber-200'
-                        }`}>
+                          }`}>
                           {appt.status}
                         </span>
                       </td>
@@ -198,7 +218,13 @@ export default function AdminDashboard({ appointments = [], doctors = [], setAdm
                     {patient.initial}
                   </div>
                   <div className="flex-1 text-left">
-                    <h4 className="font-extrabold text-[#0B2C56] text-xs leading-none">{patient.name}</h4>
+                    {/* <h4 className="font-extrabold text-[#0B2C56] text-xs leading-none">{patient.name}</h4> */}
+                    <h4
+                      onClick={() => setViewingPatientId(patient.id)}
+                      className="font-extrabold text-[#0B2C56] text-xs leading-none cursor-pointer hover:text-blue-700 hover:underline"
+                    >
+                      {patient.name}
+                    </h4>
                   </div>
                   <span className="text-[10px] font-bold text-gray-400">{patient.date}</span>
                 </div>

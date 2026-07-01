@@ -67,7 +67,34 @@ export default function AdminPatientProfile({ patientId, onBack }) {
   const pastApts = sortedApts.filter(a => new Date(a.appointmentDate) < today);
   const futureApts = sortedApts.filter(a => new Date(a.appointmentDate) >= today);
 
-  const lastVisit = pastApts.length > 0 ? pastApts[0].appointmentDate : null;
+  // const lastVisit = pastApts.length > 0 ? pastApts[0].appointmentDate : null;
+  const appointmentLastDate =
+    pastApts.length > 0
+      ? new Date(pastApts[0].appointmentDate)
+      : null;
+
+  const prescriptionLastDate =
+    prescriptions.length > 0
+      ? new Date(
+        [...prescriptions].sort(
+          (a, b) =>
+            new Date(b.prescriptionDate) -
+            new Date(a.prescriptionDate)
+        )[0].prescriptionDate
+      )
+      : null;
+
+  let lastVisit = null;
+
+  if (appointmentLastDate && prescriptionLastDate) {
+    lastVisit =
+      appointmentLastDate > prescriptionLastDate
+        ? appointmentLastDate
+        : prescriptionLastDate;
+  } else {
+    lastVisit =
+      appointmentLastDate || prescriptionLastDate;
+  }
   const nextAppointment = futureApts.length > 0 ? futureApts[futureApts.length - 1].appointmentDate : null;
 
   const fmtDate = (d) => {
@@ -78,6 +105,9 @@ export default function AdminPatientProfile({ patientId, onBack }) {
 
   // Last prescription date
   const sortedPx = [...prescriptions].sort((a, b) => new Date(b.prescriptionDate) - new Date(a.prescriptionDate));
+  const prescriptionHistory = [...prescriptions].sort(
+    (a, b) => new Date(b.prescriptionDate) - new Date(a.prescriptionDate)
+  );
   const lastPx = sortedPx.length > 0 ? sortedPx[0].prescriptionDate : null;
 
   // Last report date
@@ -86,9 +116,52 @@ export default function AdminPatientProfile({ patientId, onBack }) {
 
   const statusColor = {
     Completed: { bg: '#dcfce7', text: '#16a34a', border: '#86efac' },
-    Cancelled:  { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
-    Pending:    { bg: '#fef3c7', text: '#d97706', border: '#fde68a' },
-    Confirmed:  { bg: '#dbeafe', text: '#2563eb', border: '#93c5fd' },
+    Cancelled: { bg: '#fee2e2', text: '#dc2626', border: '#fca5a5' },
+    Pending: { bg: '#fef3c7', text: '#d97706', border: '#fde68a' },
+    Confirmed: { bg: '#dbeafe', text: '#2563eb', border: '#93c5fd' },
+  };
+
+  const deleteReport = async (reportId) => {
+
+    if (!window.confirm("Delete this report?")) return;
+
+    try {
+
+      const res = await fetch(
+        `${API}/reports/${reportId}`,
+        {
+          method: "DELETE",
+          headers: {
+            ...getAuthHeaders()
+          }
+        }
+      );
+
+      if (res.ok) {
+
+        toast.success("Report deleted successfully");
+
+        // Reload patient history
+        const historyRes = await fetch(`${API}/patient-history/${patientId}`, {
+          headers: { ...getAuthHeaders() }
+        });
+
+        const historyData = await historyRes.json();
+
+        setHistory(historyData);
+
+      } else {
+
+        toast.error("Failed to delete report");
+
+      }
+
+    } catch (err) {
+
+      toast.error(String(err));
+
+    }
+
   };
 
   return (
@@ -307,23 +380,30 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                 <EmptyState icon={<FileText size={36} />} message="No prescriptions found for this patient." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {prescriptions.map((px, idx) => {
-                    const presIdFormatted = px.prescriptionDate 
+                  {prescriptionHistory.map((px, idx) => {
+                    const presIdFormatted = px.prescriptionDate
                       ? `PRES-${px.prescriptionDate.split('-')[0]}-${String(px.id).padStart(5, '0')}`
                       : `PRES-${String(px.id).padStart(5, '0')}`;
                     return (
-                      <div 
-                        key={idx} 
-                        style={{ 
-                          background: '#fff', 
-                          borderRadius: 16, 
-                          border: '1px solid #e2e8f0', 
-                          overflow: 'hidden', 
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)', 
-                          transition: 'transform 0.2s, box-shadow 0.2s' 
+                      <div
+                        key={idx}
+                        style={{
+                          background: '#fff',
+                          borderRadius: 16,
+                          border: '1px solid #e2e8f0',
+                          overflow: 'hidden',
+                          transition: 'all 0.25s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = '0 14px 30px rgba(11,44,86,.12)';
+                          e.currentTarget.style.borderColor = '#bfdbfe';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.04)';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
+                        }}
                       >
                         {/* Top emerald accent bar */}
                         <div style={{ height: 3, background: 'linear-gradient(90deg, #059669, #34d399)' }}></div>
@@ -331,10 +411,10 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                         <div style={{ padding: '18px 22px' }}>
                           {/* Header row */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
-                            <div style={{ 
-                              width: 46, height: 46, borderRadius: 12, 
-                              background: '#ecfdf5', border: '1px solid #a7f3d0', 
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                            <div style={{
+                              width: 46, height: 46, borderRadius: 12,
+                              background: '#ecfdf5', border: '1px solid #a7f3d0',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
                               color: '#059669', fontWeight: 900, fontSize: 16, flexShrink: 0
                             }}>
                               Rx
@@ -357,8 +437,8 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                           </div>
 
                           {/* Detail panel */}
-                          <div style={{ 
-                            display: 'flex', flexDirection: 'column', gap: 10, 
+                          <div style={{
+                            display: 'flex', flexDirection: 'column', gap: 10,
                             background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9',
                             marginBottom: 16
                           }}>
@@ -453,7 +533,6 @@ export default function AdminPatientProfile({ patientId, onBack }) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {reports.map((rep, idx) => {
-                    // Report type color mapping
                     const typeColors = {
                       'Lab Report': { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe', gradient: 'linear-gradient(135deg, #3b82f6, #60a5fa)' },
                       'X-Ray': { bg: '#faf5ff', text: '#9333ea', border: '#e9d5ff', gradient: 'linear-gradient(135deg, #9333ea, #c084fc)' },
@@ -463,8 +542,6 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                       'Ultrasound': { bg: '#f0fdfa', text: '#0d9488', border: '#99f6e4', gradient: 'linear-gradient(135deg, #0d9488, #2dd4bf)' },
                     };
                     const tc = typeColors[rep.reportType] || { bg: '#f0f9ff', text: '#0369a1', border: '#bae6fd', gradient: 'linear-gradient(135deg, #0B2C56, #1e5494)' };
-
-                    // Detect file extension from filePath or reportName
                     const filePath = rep.filePath || rep.reportName || '';
                     const ext = filePath.split('.').pop()?.toUpperCase() || 'FILE';
                     const fileExt = ['PDF', 'JPG', 'JPEG', 'PNG', 'DICOM', 'DCM', 'DOC', 'DOCX'].includes(ext) ? ext : 'FILE';
@@ -473,29 +550,21 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                       <div
                         key={idx}
                         style={{
-                          background: '#fff',
-                          borderRadius: 16,
-                          border: '1px solid #e2e8f0',
-                          overflow: 'hidden',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                          cursor: 'default',
+                          background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0',
+                          overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                           transition: 'transform 0.2s, box-shadow 0.2s',
                         }}
                         onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; }}
                         onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
                       >
-                        {/* Accent bar */}
                         <div style={{ height: 3, background: tc.gradient }}></div>
-
                         <div style={{ padding: '18px 22px' }}>
-                          {/* Header row: icon + title + badges */}
+                          {/* Header */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
-                            {/* File type icon */}
                             <div style={{
                               width: 46, height: 46, borderRadius: 12,
                               background: tc.bg, border: `1px solid ${tc.border}`,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              flexShrink: 0,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                             }}>
                               <FlaskConical size={22} color={tc.text} />
                             </div>
@@ -507,7 +576,6 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                                 <Clock size={11} /> {fmtDate(rep.uploadDate)}
                               </p>
                             </div>
-                            {/* Badges */}
                             <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                               {rep.reportType && (
                                 <span style={{
@@ -528,7 +596,7 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                             </div>
                           </div>
 
-                          {/* Details section */}
+                          {/* Details */}
                           <div style={{
                             display: 'flex', flexDirection: 'column', gap: 10,
                             background: '#f8fafc', padding: '14px 16px', borderRadius: 10, border: '1px solid #f1f5f9',
@@ -546,56 +614,64 @@ export default function AdminPatientProfile({ patientId, onBack }) {
                               <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Description:</span>
                               <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>{rep.description || 'Uploaded report document'}</span>
                             </div>
-                            {rep.reportType && (
-                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <FlaskConical size={13} color="#94a3b8" />
-                                <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', minWidth: 80 }}>Type:</span>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{rep.reportType}</span>
-                              </div>
-                            )}
                           </div>
 
-                          {/* Download button */}
-                          <button
-                            onClick={async () => {
-                              if (rep.id) {
-                                try {
-                                  const res = await fetch(`${API}/reports/${rep.id}/download`, {
-                                    headers: { ...getAuthHeaders() }
-                                  });
-                                  if (!res.ok) throw new Error('Failed to download file');
-                                  const blob = await res.blob();
-                                  const url = window.URL.createObjectURL(blob);
-                                  const link = document.createElement('a');
-                                  link.href = url;
-                                  link.download = rep.reportName || 'Report';
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                  window.URL.revokeObjectURL(url);
-                                  toast.success('Report downloaded successfully!');
-                                } catch (e) {
-                                  toast.error('Error downloading file.');
+                          {/* Action buttons */}
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button
+                              onClick={async () => {
+                                if (rep.id) {
+                                  try {
+                                    const res = await fetch(`${API}/reports/${rep.id}/download`, {
+                                      headers: { ...getAuthHeaders() }
+                                    });
+                                    if (!res.ok) throw new Error('Failed to download file');
+                                    const blob = await res.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = rep.reportName || 'Report';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    window.URL.revokeObjectURL(url);
+                                    toast.success('Report downloaded successfully!');
+                                  } catch (e) {
+                                    toast.error('Error downloading file.');
+                                  }
+                                } else {
+                                  toast.error('No file data available.');
                                 }
-                              } else {
-                                toast.error('No file data available.');
-                              }
-                            }}
-                            style={{
-                              width: '100%', padding: '11px 0',
-                              background: 'linear-gradient(135deg, #0B2C56, #1a4478)',
-                              border: 'none', borderRadius: 10,
-                              fontSize: 12, fontWeight: 700, color: '#fff',
-                              cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                              transition: 'all 0.25s ease',
-                              boxShadow: '0 2px 8px rgba(11,44,86,0.15)',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(11,44,86,0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(11,44,86,0.15)'; e.currentTarget.style.transform = 'none'; }}
-                          >
-                            <Download size={14} /> Download Report
-                          </button>
+                              }}
+                              style={{
+                                flex: 1, padding: '11px 0',
+                                background: 'linear-gradient(135deg, #0B2C56, #1a4478)',
+                                border: 'none', borderRadius: 10,
+                                fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                transition: 'all 0.25s ease',
+                                boxShadow: '0 2px 8px rgba(11,44,86,0.15)',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(11,44,86,0.3)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(11,44,86,0.15)'; }}
+                            >
+                              <Download size={14} /> Download
+                            </button>
+                            <button
+                              onClick={() => deleteReport(rep.id)}
+                              style={{
+                                padding: '11px 16px',
+                                background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10,
+                                fontSize: 12, fontWeight: 700, color: '#dc2626', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                transition: '0.2s',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = '#fef2f2'; }}
+                            >
+                              🗑 Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );

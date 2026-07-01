@@ -45,10 +45,13 @@ public class BillingServiceImpl
                                 dto.getPatientId())
                         .orElseThrow();
 
-        Appointment appointment =
-                appointmentRepository.findById(
-                                dto.getAppointmentId())
-                        .orElseThrow();
+        Appointment appointment = null;
+
+        if (dto.getAppointmentId() != null) {
+            appointment = appointmentRepository
+                    .findById(dto.getAppointmentId())
+                    .orElseThrow();
+        }
 
         double totalAmount = 0;
 

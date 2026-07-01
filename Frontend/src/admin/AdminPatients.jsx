@@ -12,6 +12,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
 
   // Sync filtered list when patients prop changes
   useEffect(() => {
+     console.log("Patients prop:", patients);
     setFilteredPatients(patients);
   }, [patients]);
   const [editMode, setEditMode] = useState(false);
@@ -111,7 +112,9 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-150">
-              {filteredPatients.map((p) => (
+             
+  {console.log(filteredPatients)}
+  {filteredPatients.map((p) => (
                 <tr key={p.id} onClick={() => setViewingPatientId(p.id)} className="hover:bg-gray-50/50 transition cursor-pointer">
                   <td className="p-4 font-bold text-gray-700">{p.id}</td>
                   <td className="p-4 font-extrabold text-[#0B2C56]">{p.fullName}</td>
@@ -158,7 +161,7 @@ export default function AdminPatients({ patients, addPatient, editPatient, delet
           </table>
         </div>
 
-        {patients.length === 0 && (
+        {filteredPatients.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-xs">
             <span>👤</span>
             <p className="mt-1">No patients found.</p>
