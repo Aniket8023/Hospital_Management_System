@@ -26,16 +26,16 @@ public class InvoicePdfGenerator {
         PdfWriter writer = PdfWriter.getInstance(document, out);
         document.open();
 
-<<<<<<< HEAD
+
         // 1. HEADER SECTION — Logo left, text centered
-        PdfPTable headerTable = new PdfPTable(3);
-        headerTable.setWidthPercentage(100);
-        headerTable.setWidths(new float[]{1.5f, 4f, 1.5f});
-        
-        PdfPCell logoCell = new PdfPCell();
-        logoCell.setBorder(PdfPCell.NO_BORDER);
-        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-=======
+//        PdfPTable headerTable = new PdfPTable(3);
+//        headerTable.setWidthPercentage(100);
+//        headerTable.setWidths(new float[]{1.5f, 4f, 1.5f});
+//
+//        PdfPCell logoCell = new PdfPCell();
+//        logoCell.setBorder(PdfPCell.NO_BORDER);
+//        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
         // 1. HEADER SECTION — full landscape logo centered
 //        Image logoImg = null;
 //        try {
@@ -77,62 +77,62 @@ public class InvoicePdfGenerator {
         logoCell.setBorder(Rectangle.NO_BORDER);
         logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
->>>>>>> b54963be10509bd60ee73b656358bdaff2ff2f12
+
         try {
 
             java.net.URL logoUrl =
                     InvoicePdfGenerator.class.getResource("/logo.png");
 
             if (logoUrl != null) {
-<<<<<<< HEAD
-                Image logoImg = Image.getInstance(logoUrl);
-                logoImg.scaleToFit(80, 80);
-                logoImg.setAlignment(Element.ALIGN_CENTER);
-                logoCell.addElement(logoImg);
-=======
+
+//                Image logoImg = Image.getInstance(logoUrl);
+//                logoImg.scaleToFit(80, 80);
+//                logoImg.setAlignment(Element.ALIGN_CENTER);
+//                logoCell.addElement(logoImg);
+
 
                 Image logo = Image.getInstance(logoUrl);
 
                 logo.scaleToFit(110, 110);
 
                 logoCell.addElement(logo);
->>>>>>> b54963be10509bd60ee73b656358bdaff2ff2f12
+
             }
 
         } catch (Exception e) {
             System.out.println("Logo not found : " + e.getMessage());
         }
-<<<<<<< HEAD
-        headerTable.addCell(logoCell);
+
+//        headerTable.addCell(logoCell);
+//
+//        PdfPCell textCell = new PdfPCell();
+//        textCell.setBorder(PdfPCell.NO_BORDER);
+//        textCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+//
+//        Font hFont = new Font(Font.FontFamily.TIMES_ROMAN, 24, Font.BOLD, NAVY_BLUE);
+//        Paragraph p1 = new Paragraph("SHINDE HOSPITAL", hFont);
+//        p1.setAlignment(Element.ALIGN_CENTER);
+//        textCell.addElement(p1);
+//
+//        Font subFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, NAVY_BLUE);
+//        Paragraph p2 = new Paragraph("ENT & General Healthcare", subFont);
+//        p2.setAlignment(Element.ALIGN_CENTER);
+//        p2.setSpacingBefore(2);
+//        textCell.addElement(p2);
+//
+//        Font addrFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+//        Paragraph p3 = new Paragraph("Pune, Maharashtra | Phone: +91 98765 43210", addrFont);
+//        p3.setAlignment(Element.ALIGN_CENTER);
+//        p3.setSpacingBefore(2);
+//        textCell.addElement(p3);
+//
+//        headerTable.addCell(textCell);
+//
+//        PdfPCell emptyCell = new PdfPCell();
+//        emptyCell.setBorder(PdfPCell.NO_BORDER);
+//        headerTable.addCell(emptyCell);
         
-        PdfPCell textCell = new PdfPCell();
-        textCell.setBorder(PdfPCell.NO_BORDER);
-        textCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        
-        Font hFont = new Font(Font.FontFamily.TIMES_ROMAN, 24, Font.BOLD, NAVY_BLUE);
-        Paragraph p1 = new Paragraph("SHINDE HOSPITAL", hFont);
-        p1.setAlignment(Element.ALIGN_CENTER);
-        textCell.addElement(p1);
-        
-        Font subFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, NAVY_BLUE);
-        Paragraph p2 = new Paragraph("ENT & General Healthcare", subFont);
-        p2.setAlignment(Element.ALIGN_CENTER);
-        p2.setSpacingBefore(2);
-        textCell.addElement(p2);
-        
-        Font addrFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Paragraph p3 = new Paragraph("Pune, Maharashtra | Phone: +91 98765 43210", addrFont);
-        p3.setAlignment(Element.ALIGN_CENTER);
-        p3.setSpacingBefore(2);
-        textCell.addElement(p3);
-        
-        headerTable.addCell(textCell);
-        
-        PdfPCell emptyCell = new PdfPCell();
-        emptyCell.setBorder(PdfPCell.NO_BORDER);
-        headerTable.addCell(emptyCell);
-        
-=======
+
 
 // ---------- RIGHT : HOSPITAL DETAILS ----------
         PdfPCell textCell = new PdfPCell();
@@ -194,7 +194,7 @@ public class InvoicePdfGenerator {
         headerTable.addCell(logoCell);
         headerTable.addCell(textCell);
 
->>>>>>> b54963be10509bd60ee73b656358bdaff2ff2f12
+
         document.add(headerTable);
 
         document.add(new Paragraph(" "));
